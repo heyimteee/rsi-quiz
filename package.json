@@ -20,7 +20,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "verify": "npm run lint && npm run typecheck && npm run test:coverage && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
+    "verify:full": "npm run lint && npm run typecheck && npm run test:coverage && npm run test:e2e && npm run build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
