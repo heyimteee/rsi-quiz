@@ -1,5 +1,6 @@
 import "server-only";
 
+import { startOfDay } from "date-fns";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
@@ -52,16 +53,32 @@ export async function createItinerary(
 ) {
   if (!name.trim()) throw new ItineraryError("INVALID_NAME", "Nama rencana perjalanan wajib diisi");
   if (segments.length === 0) throw new ItineraryError("NO_SEGMENT", "Tambahkan minimal satu rute");
+  if (segments.length > 4) {
+    throw new ItineraryError("MAX_SEGMENTS", "Rencana perjalanan maksimal memiliki 4 rute");
+  }
+  const today = startOfDay(new Date());
   for (let index = 0; index < segments.length; index++) {
     const segment = segments[index];
+    const previous = segments[index - 1];
+    if (startOfDay(segment.departureDate) < today) {
+      throw new ItineraryError("INVALID_DATE", "Tanggal rute tidak boleh di masa lalu");
+    }
     if (segment.originId === segment.destinationId) {
       throw new ItineraryError("INVALID_ROUTE", "Kota asal dan tujuan tidak boleh sama");
     }
-    if (index > 0 && segment.departureDate < segments[index - 1].departureDate) {
-      throw new ItineraryError(
-        "INVALID_DATE",
-        "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
-      );
+    if (previous) {
+      if (segment.originId !== previous.destinationId) {
+        throw new ItineraryError(
+          "INVALID_CONTINUITY",
+          "Kota asal rute lanjutan harus sama dengan kota tujuan rute sebelumnya",
+        );
+      }
+      if (segment.departureDate < previous.departureDate) {
+        throw new ItineraryError(
+          "INVALID_DATE",
+          "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
+        );
+      }
     }
   }
 
@@ -98,12 +115,23 @@ export async function addItinerarySegment(
   if (segment.originId === segment.destinationId) {
     throw new ItineraryError("INVALID_ROUTE", "Kota asal dan tujuan tidak boleh sama");
   }
+  if (startOfDay(segment.departureDate) < startOfDay(new Date())) {
+    throw new ItineraryError("INVALID_DATE", "Tanggal rute tidak boleh di masa lalu");
+  }
   const previous = itinerary.segments[itinerary.segments.length - 1];
-  if (previous && segment.departureDate < new Date(previous.departureDate)) {
-    throw new ItineraryError(
-      "INVALID_DATE",
-      "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
-    );
+  if (previous) {
+    if (segment.originId !== previous.destinationId) {
+      throw new ItineraryError(
+        "INVALID_CONTINUITY",
+        "Kota asal rute lanjutan harus sama dengan kota tujuan rute sebelumnya",
+      );
+    }
+    if (segment.departureDate < new Date(previous.departureDate)) {
+      throw new ItineraryError(
+        "INVALID_DATE",
+        "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
+      );
+    }
   }
 
   return prisma.itinerarySegment.create({

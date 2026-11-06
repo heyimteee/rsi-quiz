@@ -68,15 +68,20 @@ export function ItineraryBuilder({
             disabled={segments.length >= 4}
             onClick={() => {
               if (segments.length >= 4) return;
-              setSegments((current) => [
-                ...current,
-                {
-                  key: nextKey,
-                  origin: airportId("SUB"),
-                  destination: airportId("CGK"),
-                  departureDate: defaultDate,
-                },
-              ]);
+              setSegments((current) => {
+                const previousDestination = current[current.length - 1]?.destination ?? airportId("CGK");
+                const nextDestination =
+                  previousDestination === airportId("DPS") ? airportId("SUB") : airportId("DPS");
+                return [
+                  ...current,
+                  {
+                    key: nextKey,
+                    origin: previousDestination,
+                    destination: nextDestination,
+                    departureDate: defaultDate,
+                  },
+                ];
+              });
               setNextKey((key) => key + 1);
             }}
           >

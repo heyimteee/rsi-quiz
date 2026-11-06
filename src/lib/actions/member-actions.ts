@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireRole } from "@/lib/auth/session";
+import { createSession, requireRole } from "@/lib/auth/session";
 import { parseDateOnly } from "@/lib/utils";
 import { parseIdentityFormData } from "@/lib/validation/booking";
 import { updatePassengerProfile } from "@/lib/services/booking-service";
@@ -33,6 +33,9 @@ export async function updateProfileAction(
 
   const birthDate = parseDateOnly(parsed.data.birthDate);
   if (!birthDate) return { fieldErrors: { birthDate: "Tanggal lahir tidak valid" } };
+  if (birthDate.getTime() > Date.now()) {
+    return { fieldErrors: { birthDate: "Tanggal lahir tidak boleh di masa depan" } };
+  }
 
   const passportNumber = String(formData.get("passportNumber") ?? "").trim();
   if (passportNumber.length > 20) {
@@ -45,6 +48,13 @@ export async function updateProfileAction(
     phone: parsed.data.phone,
     birthDate,
     passportNumber: passportNumber || null,
+  });
+
+  await createSession({
+    id: user.id,
+    name: parsed.data.fullName,
+    email: user.email,
+    role: user.role,
   });
 
   revalidatePath("/member/profil");
@@ -125,17 +135,29 @@ function parseSegments(formData: FormData):
     if (!departureDate) {
       return { success: false, error: `Rute ${index + 1}: tanggal tidak valid` };
     }
-    if (segments.length > 0 && departureDate < segments[segments.length - 1].departureDate) {
-      return {
-        success: false,
-        error: "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
-      };
+    const previous = segments[segments.length - 1];
+    if (previous) {
+      if (originId !== previous.destinationId) {
+        return {
+          success: false,
+          error: "Kota asal rute lanjutan harus sama dengan kota tujuan rute sebelumnya",
+        };
+      }
+      if (departureDate < previous.departureDate) {
+        return {
+          success: false,
+          error: "Tanggal rute lanjutan tidak boleh lebih awal daripada rute sebelumnya",
+        };
+      }
     }
     segments.push({ originId, destinationId, departureDate });
   }
 
   if (segments.length === 0) {
     return { success: false, error: "Tambahkan minimal satu rute perjalanan" };
+  }
+  if (segments.length > 4) {
+    return { success: false, error: "Rencana perjalanan maksimal memiliki 4 rute" };
   }
   return { success: true, segments };
 }

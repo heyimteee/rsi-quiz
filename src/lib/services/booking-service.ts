@@ -391,7 +391,9 @@ export async function updatePassengerProfile(userId: string, input: PassengerIde
         nik: input.nik.trim(),
         phone: input.phone.trim(),
         birthDate: input.birthDate,
-        passportNumber: input.passportNumber?.trim() || null,
+        ...(input.passportNumber !== undefined
+          ? { passportNumber: input.passportNumber?.trim() || null }
+          : {}),
       },
       create: {
         userId,

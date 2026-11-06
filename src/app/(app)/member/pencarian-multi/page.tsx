@@ -329,38 +329,49 @@ export default async function MultiDestinationSearchPage({ searchParams }: { sea
                     </p>
                   ) : (
                     <div className="mt-3 space-y-2">
-                      {flights.slice(0, 3).map((flight) => (
-                        <div
-                          key={flight.id}
-                          className="flex flex-col gap-2 rounded-xl border border-line p-3 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="flex size-8 items-center justify-center rounded-lg bg-navy text-[10px] font-bold text-white">
-                              {flight.airline.code}
-                            </span>
-                            <div>
-                              <p className="text-sm font-semibold">{flight.airline.name}</p>
-                              <p className="text-[11px] text-muted">
-                                {formatTime(flight.departureAt)} → {formatTime(flight.arrivalAt)} ·{" "}
-                                {formatDuration(durationMinutes(flight.departureAt, flight.arrivalAt))}
-                              </p>
+                      {flights.slice(0, 3).map((flight) => {
+                        const soldOut = flight.seatsAvailable <= 0;
+                        return (
+                          <div
+                            key={flight.id}
+                            className="flex flex-col gap-2 rounded-xl border border-line p-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="flex size-8 items-center justify-center rounded-lg bg-navy text-[10px] font-bold text-white">
+                                {flight.airline.code}
+                              </span>
+                              <div>
+                                <p className="text-sm font-semibold">{flight.airline.name}</p>
+                                <p className="text-[11px] text-muted">
+                                  {formatTime(flight.departureAt)} → {formatTime(flight.arrivalAt)} ·{" "}
+                                  {formatDuration(durationMinutes(flight.departureAt, flight.arrivalAt))}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`text-sm font-extrabold ${
+                                  soldOut ? "text-muted line-through" : "text-navy"
+                                }`}
+                              >
+                                {formatIDR(flight.price)}
+                              </span>
+                              {soldOut ? (
+                                <span className="badge bg-red-soft text-red-700">Kursi habis</span>
+                              ) : (
+                                <Link
+                                  href={`/penerbangan/${flight.id}`}
+                                  className="btn-secondary btn-sm"
+                                  aria-label={`Pilih ${flight.airline.name} ${flight.flightNumber}`}
+                                >
+                                  Pilih
+                                  <ArrowRight className="size-3.5" aria-hidden />
+                                </Link>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-extrabold text-navy">
-                              {formatIDR(flight.price)}
-                            </span>
-                            <Link
-                              href={`/penerbangan/${flight.id}`}
-                              className="btn-secondary btn-sm"
-                              aria-label={`Pilih ${flight.airline.name} ${flight.flightNumber}`}
-                            >
-                              Pilih
-                              <ArrowRight className="size-3.5" aria-hidden />
-                            </Link>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </article>

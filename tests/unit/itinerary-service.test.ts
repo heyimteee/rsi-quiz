@@ -120,6 +120,26 @@ describe("createItinerary", () => {
       ]),
     ).rejects.toMatchObject({ code: "INVALID_DATE" });
   });
+
+  it("menolak rute yang tidak tersambung", async () => {
+    await expect(
+      createItinerary("member-1", "Liburan", [
+        validSegments[0],
+        { ...validSegments[1], originId: "airport-cgk" },
+      ]),
+    ).rejects.toMatchObject({ code: "INVALID_CONTINUITY" });
+  });
+
+  it("menolak lebih dari empat rute", async () => {
+    const five = Array.from({ length: 5 }, (_, index) => ({
+      originId: index % 2 === 0 ? "airport-cgk" : "airport-dps",
+      destinationId: index % 2 === 0 ? "airport-dps" : "airport-cgk",
+      departureDate: new Date(2026, 10, 10 + index),
+    }));
+    await expect(createItinerary("member-1", "Liburan", five)).rejects.toMatchObject({
+      code: "MAX_SEGMENTS",
+    });
+  });
 });
 
 describe("addItinerarySegment", () => {

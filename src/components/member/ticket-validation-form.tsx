@@ -29,6 +29,9 @@ export function TicketValidationForm({
 }) {
   const [state, formAction] = useActionState(validateTicketAction, initialState);
   const [bookingId, setBookingId] = useState(tickets[0]?.id ?? "");
+  const selectedTicket = tickets.find((ticket) => ticket.id === bookingId) ?? null;
+  const showResult =
+    Boolean(state.status) && (!state.reference || state.reference === selectedTicket?.referenceCode);
 
   return (
     <form action={formAction} className="space-y-4" data-testid="validation-form">
@@ -43,7 +46,7 @@ export function TicketValidationForm({
       ) : null}
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
-      {state.status === "VALID" ? (
+      {showResult && state.status === "VALID" ? (
         <Alert variant="success" title={state.alreadyValid ? "Tiket sudah tervalidasi" : "Validasi berhasil"}>
           {state.message}
           {state.reference ? (
@@ -54,7 +57,7 @@ export function TicketValidationForm({
           ) : null}
         </Alert>
       ) : null}
-      {state.status === "REJECTED" ? (
+      {showResult && state.status === "REJECTED" ? (
         <Alert variant="error" title={state.message ?? "Data profil tidak lengkap"}>
           <p>Validasi tiket ditolak. Lengkapi data berikut terlebih dahulu:</p>
           <ul className="mt-1 list-inside list-disc">

@@ -36,7 +36,7 @@ export class MemberError extends Error {
 
 export async function getMemberTickets(userId: string) {
   return prisma.booking.findMany({
-    where: { passengerId: userId },
+    where: { passengerId: userId, status: { not: "CANCELLED" } },
     include: memberTicketInclude,
     orderBy: { createdAt: "desc" },
   });
@@ -54,6 +54,12 @@ export async function validateMemberTicket(userId: string, bookingId: string) {
   if (!booking.ticket) {
     throw new MemberError("TICKET_NOT_FOUND", "Tiket tidak ditemukan");
   }
+  if (booking.status === "CANCELLED") {
+    throw new MemberError(
+      "TICKET_CANCELLED",
+      "Tiket tidak dapat divalidasi karena pemesanan telah dibatalkan",
+    );
+  }
   if (booking.ticket.validationStatus === "VALID") {
     return {
       status: "VALID" as const,
@@ -65,52 +71,42 @@ export async function validateMemberTicket(userId: string, bookingId: string) {
   }
 
   const result = validateTicketDomain(booking.passenger.profile, true);
+  const nextStatus = result.status;
+  const message = result.status === "REJECTED" ? MESSAGES.PROFILE_INCOMPLETE : "Tiket berhasil divalidasi";
 
-  if (result.status === "REJECTED") {
-    await prisma.$transaction(async (tx) => {
-      await tx.ticket.update({
-        where: { id: booking.ticket!.id },
-        data: { validationStatus: "REJECTED", validatedAt: new Date() },
-      });
-      await tx.ticketValidation.create({
-        data: {
-          ticketId: booking.ticket!.id,
-          profileId: userId,
-          status: "REJECTED",
-          message: MESSAGES.PROFILE_INCOMPLETE,
-        },
-      });
+  const transition = await prisma.$transaction(async (tx) => {
+    const updated = await tx.ticket.updateMany({
+      where: { id: booking.ticket!.id, validationStatus: { not: "VALID" } },
+      data: { validationStatus: nextStatus, validatedAt: new Date() },
     });
-    return {
-      status: "REJECTED" as const,
-      message: MESSAGES.PROFILE_INCOMPLETE,
-      alreadyValid: false,
-      booking,
-      missingLabels: result.missingLabels ?? [],
-    };
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.ticket.update({
-      where: { id: booking.ticket!.id },
-      data: { validationStatus: "VALID", validatedAt: new Date() },
-    });
+    if (updated.count === 0) return { alreadyValid: true };
     await tx.ticketValidation.create({
       data: {
         ticketId: booking.ticket!.id,
         profileId: userId,
-        status: "VALID",
-        message: "Tiket berhasil divalidasi",
+        status: nextStatus,
+        message,
       },
     });
+    return { alreadyValid: false };
   });
 
+  if (transition.alreadyValid) {
+    return {
+      status: "VALID" as const,
+      message: "Tiket sudah tervalidasi",
+      alreadyValid: true,
+      booking,
+      missingLabels: [] as string[],
+    };
+  }
+
   return {
-    status: "VALID" as const,
-    message: "Tiket berhasil divalidasi",
+    status: nextStatus,
+    message,
     alreadyValid: false,
     booking,
-    missingLabels: [] as string[],
+    missingLabels: result.missingLabels ?? [],
   };
 }
 

@@ -424,9 +424,32 @@ describe("updatePassengerProfile", () => {
         update: expect.objectContaining({ fullName: "Aditya Pratama" }),
       }),
     );
+    const updateData = tx.passengerProfile.upsert.mock.calls[0][0].update;
+    expect(updateData).not.toHaveProperty("passportNumber");
     expect(tx.user.update).toHaveBeenCalledWith({
       where: { id: "passenger-1" },
       data: { name: "Aditya Pratama" },
     });
+  });
+
+  it("memperbarui paspor hanya jika nilainya diberikan", async () => {
+    const tx = {
+      passengerProfile: { upsert: vi.fn().mockResolvedValue(completeProfile) },
+      user: { update: vi.fn().mockResolvedValue({}) },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    await updatePassengerProfile("passenger-1", {
+      fullName: "Aditya Pratama",
+      nik: "3171012506950001",
+      phone: "081234567890",
+      birthDate: new Date(1995, 5, 25),
+      passportNumber: "B1234567",
+    });
+
+    expect(tx.passengerProfile.upsert.mock.calls[0][0].update).toEqual(
+      expect.objectContaining({ passportNumber: "B1234567" }),
+    );
   });
 });

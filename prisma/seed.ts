@@ -625,7 +625,7 @@ async function main() {
         ticketId: demoTicket.id,
         profileId: member2.id,
         status: "REJECTED",
-        message: "Data profil tidak lengkap: NIK, Tanggal lahir.",
+        message: "Data profil tidak lengkap",
       },
     });
   }

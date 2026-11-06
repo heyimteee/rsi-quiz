@@ -62,7 +62,9 @@ describe("getMemberTickets", () => {
     const result = await getMemberTickets("member-1");
     expect(result).toHaveLength(1);
     expect(bookingFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { passengerId: "member-1" } }),
+      expect.objectContaining({
+        where: { passengerId: "member-1", status: { not: "CANCELLED" } },
+      }),
     );
   });
 });
@@ -94,7 +96,7 @@ describe("validateMemberTicket", () => {
       }) as never,
     );
     const tx = {
-      ticket: { update: vi.fn().mockResolvedValue({}) },
+      ticket: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       ticketValidation: { create: vi.fn().mockResolvedValue({}) },
     };
     transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
@@ -104,8 +106,11 @@ describe("validateMemberTicket", () => {
     expect(result.status).toBe("REJECTED");
     expect(result.message).toBe("Data profil tidak lengkap");
     expect(result.missingLabels).toEqual(["NIK", "Tanggal lahir"]);
-    expect(tx.ticket.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ validationStatus: "REJECTED" }) }),
+    expect(tx.ticket.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "ticket-1", validationStatus: { not: "VALID" } },
+        data: expect.objectContaining({ validationStatus: "REJECTED" }),
+      }),
     );
     expect(tx.ticketValidation.create).toHaveBeenCalled();
   });
@@ -113,7 +118,7 @@ describe("validateMemberTicket", () => {
   it("memvalidasi tiket jika profil lengkap", async () => {
     bookingFindFirst.mockResolvedValue(makeTicketBooking() as never);
     const tx = {
-      ticket: { update: vi.fn().mockResolvedValue({}) },
+      ticket: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       ticketValidation: { create: vi.fn().mockResolvedValue({}) },
     };
     transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
@@ -122,9 +127,36 @@ describe("validateMemberTicket", () => {
     const result = await validateMemberTicket("member-1", "booking-1");
     expect(result.status).toBe("VALID");
     expect(result.alreadyValid).toBe(false);
-    expect(tx.ticket.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ validationStatus: "VALID" }) }),
+    expect(tx.ticket.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "ticket-1", validationStatus: { not: "VALID" } },
+        data: expect.objectContaining({ validationStatus: "VALID" }),
+      }),
     );
+  });
+
+  it("menolak validasi tiket dari pemesanan yang dibatalkan", async () => {
+    bookingFindFirst.mockResolvedValue(
+      makeTicketBooking({ status: "CANCELLED" }) as never,
+    );
+    await expect(validateMemberTicket("member-1", "booking-1")).rejects.toMatchObject({
+      code: "TICKET_CANCELLED",
+    });
+    expect(transaction).not.toHaveBeenCalled();
+  });
+
+  it("mengembalikan alreadyValid jika transisi kalah balapan", async () => {
+    bookingFindFirst.mockResolvedValue(makeTicketBooking() as never);
+    const tx = {
+      ticket: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      ticketValidation: { create: vi.fn() },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    const result = await validateMemberTicket("member-1", "booking-1");
+    expect(result.alreadyValid).toBe(true);
+    expect(tx.ticketValidation.create).not.toHaveBeenCalled();
   });
 });
 
