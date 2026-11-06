@@ -54,7 +54,19 @@ export default async function FlightDetailPage({ params }: { params: Promise<{ i
         eyebrow="Studi Kasus 02 · Detail Penerbangan"
         title={`${flight.origin.city} ke ${flight.destination.city}`}
         description={`${flight.airline.name} ${flight.flightNumber} · ${formatLongDate(flight.departureAt)}`}
-        actions={<span className="badge bg-sky-soft text-sky">Tersedia</span>}
+        actions={
+          <span
+            className={`badge ${
+              departurePassed
+                ? "bg-red-soft text-red-700"
+                : flight.seatsAvailable <= 0
+                  ? "bg-amber-soft text-amber-800"
+                  : "bg-sky-soft text-sky"
+            }`}
+          >
+            {departurePassed ? "Sudah lewat" : flight.seatsAvailable <= 0 ? "Kursi habis" : "Tersedia"}
+          </span>
+        }
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr]">

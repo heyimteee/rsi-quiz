@@ -80,7 +80,9 @@ export function FlightCard({
           <Users className="size-3.5" aria-hidden />
           {soldOut ? "Kursi habis" : `${flight.seatsAvailable} kursi tersedia`}
         </span>
-        {href ? (
+        {soldOut ? (
+          <span className="badge bg-red-soft text-red-700">Tidak tersedia</span>
+        ) : href ? (
           <Link
             href={href}
             className="btn-primary btn-sm"

@@ -3,7 +3,7 @@ import "server-only";
 import { endOfDay, startOfDay } from "date-fns";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { searchFlights, type FlightSearchCriteria } from "@/lib/domain/flight";
+import { isSameLocalDay, searchFlights, type FlightSearchCriteria } from "@/lib/domain/flight";
 
 export const flightInclude = {
   airline: true,
@@ -31,12 +31,14 @@ export async function searchFlightOffers(criteria: FlightOffersCriteria) {
   const date = new Date(criteria.date);
   if (Number.isNaN(date.getTime())) return [];
 
+  const now = new Date();
+  const lowerBound = isSameLocalDay(date, now) ? now : startOfDay(date);
   const flights = await prisma.flight.findMany({
     where: {
       origin: { code: criteria.originCode.toUpperCase() },
       destination: { code: criteria.destinationCode.toUpperCase() },
       departureAt: {
-        gte: startOfDay(date),
+        gte: lowerBound,
         lte: endOfDay(date),
       },
     },

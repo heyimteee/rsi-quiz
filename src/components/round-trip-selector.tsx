@@ -38,17 +38,22 @@ function Option({
   onSelect: () => void;
   testId: string;
 }) {
+  const soldOut = flight.seatsAvailable <= 0;
   return (
     <label
       data-testid={testId}
       className={cn(
-        "flex cursor-pointer gap-3 rounded-xl border p-3 transition",
+        "flex gap-3 rounded-xl border p-3 transition",
+        soldOut
+          ? "cursor-not-allowed border-line bg-canvas/60 opacity-60"
+          : "cursor-pointer",
         selected ? "border-sky bg-sky-soft/50 ring-2 ring-sky/15" : "border-line bg-white hover:border-sky/40",
       )}
     >
       <input
         type="radio"
         checked={selected}
+        disabled={soldOut}
         onChange={onSelect}
         className="mt-1 size-4 accent-sky"
         aria-label={`Pilih ${flight.airline.name} ${flight.flightNumber}`}
@@ -59,7 +64,9 @@ function Option({
             <span className="block text-xs font-bold text-ink">{flight.airline.name}</span>
             <span className="block text-[10px] text-muted">{flight.flightNumber}</span>
           </span>
-          <span className="shrink-0 text-sm font-extrabold text-navy">{formatIDR(flight.price)}</span>
+          <span className="shrink-0 text-sm font-extrabold text-navy">
+            {soldOut ? "Kursi habis" : formatIDR(flight.price)}
+          </span>
         </span>
         <span className="mt-2 flex items-center gap-1.5 text-xs">
           <span className="font-bold">{formatTime(flight.departureAt)}</span>
@@ -90,7 +97,13 @@ export function RoundTripSelector({
   const [outboundId, setOutboundId] = useState<string | null>(null);
   const [returnId, setReturnId] = useState<string | null>(null);
   const outbound = outboundFlights.find((flight) => flight.id === outboundId) ?? null;
-  const inbound = returnFlights.find((flight) => flight.id === returnId) ?? null;
+  const selectableReturns = outbound
+    ? returnFlights.filter(
+        (flight) =>
+          new Date(flight.departureAt).getTime() > new Date(outbound.arrivalAt).getTime(),
+      )
+    : returnFlights;
+  const inbound = selectableReturns.find((flight) => flight.id === returnId) ?? null;
   const total = (outbound?.price ?? 0) + (inbound?.price ?? 0);
 
   return (
@@ -109,7 +122,10 @@ export function RoundTripSelector({
                 key={flight.id}
                 flight={flight}
                 selected={outboundId === flight.id}
-                onSelect={() => setOutboundId(flight.id)}
+                onSelect={() => {
+                  setOutboundId(flight.id);
+                  setReturnId(null);
+                }}
                 testId="outbound-option"
               />
             ))}
@@ -121,19 +137,29 @@ export function RoundTripSelector({
             <h2 id="kepulangan" className="section-title">
               Pilih penerbangan kepulangan
             </h2>
-            <p className="text-xs text-muted">{returnFlights.length} penerbangan tersedia</p>
+            <p className="text-xs text-muted">
+              {selectableReturns.length} penerbangan tersedia
+              {outbound ? " setelah keberangkatan dipilih" : ""}
+            </p>
           </div>
-          <div className="space-y-2">
-            {returnFlights.map((flight) => (
-              <Option
-                key={flight.id}
-                flight={flight}
-                selected={returnId === flight.id}
-                onSelect={() => setReturnId(flight.id)}
-                testId="return-option"
-              />
-            ))}
-          </div>
+          {selectableReturns.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-line bg-surface/60 p-3 text-xs text-muted">
+              Tidak ada penerbangan kepulangan yang tersedia setelah jadwal keberangkatan yang
+              dipilih. Pilih penerbangan keberangkatan lain.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {selectableReturns.map((flight) => (
+                <Option
+                  key={flight.id}
+                  flight={flight}
+                  selected={returnId === flight.id}
+                  onSelect={() => setReturnId(flight.id)}
+                  testId="return-option"
+                />
+              ))}
+            </div>
+          )}
         </section>
       </div>
 

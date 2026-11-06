@@ -59,10 +59,12 @@ export default async function CompareDestinationsPage({ searchParams }: { search
         searchFlightOffers({ originCode, destinationCode: destination2, date, sort: "price_asc" }),
       ]);
 
-  const summary1 = summarizeFlights(flights1);
-  const summary2 = summarizeFlights(flights2);
-  const cheapest1 = getCheapestFlight(flights1);
-  const cheapest2 = getCheapestFlight(flights2);
+  const available1 = flights1.filter((flight) => flight.seatsAvailable > 0);
+  const available2 = flights2.filter((flight) => flight.seatsAvailable > 0);
+  const summary1 = summarizeFlights(available1);
+  const summary2 = summarizeFlights(available2);
+  const cheapest1 = getCheapestFlight(available1);
+  const cheapest2 = getCheapestFlight(available2);
   const airport1 = airports.find((airport) => airport.code === destination1);
   const airport2 = airports.find((airport) => airport.code === destination2);
 
@@ -168,8 +170,9 @@ export default async function CompareDestinationsPage({ searchParams }: { search
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2" data-testid="compare-grid">
-        {[
+      {!validationError ? (
+        <div className="grid gap-4 lg:grid-cols-2" data-testid="compare-grid">
+          {[
           { airport: airport1, code: destination1, flights: flights1, summary: summary1, cheapest: cheapest1 },
           { airport: airport2, code: destination2, flights: flights2, summary: summary2, cheapest: cheapest2 },
         ].map((column, columnIndex) => (
@@ -246,8 +249,9 @@ export default async function CompareDestinationsPage({ searchParams }: { search
               Lihat semua penerbangan ke {column.airport?.city ?? column.code}
             </Link>
           </section>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

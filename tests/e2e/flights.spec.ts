@@ -74,6 +74,7 @@ test.describe("studi kasus 03 - perbandingan dua tujuan", () => {
     await loginAsPassenger(page);
     await page.goto("/penerbangan/bandingkan?asal=CGK&tujuan1=DPS&tujuan2=DPS");
     await expect(page.getByText("Pilih dua tujuan yang berbeda untuk dibandingkan.")).toBeVisible();
+    await expect(page.getByTestId("compare-grid")).toHaveCount(0);
   });
 });
 

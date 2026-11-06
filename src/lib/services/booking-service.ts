@@ -9,8 +9,16 @@ import { canCancelBooking, calculateTotalPrice, normalizeBookingReference } from
 import { formatDateTime, formatIDR } from "@/lib/utils";
 
 export const bookingInclude = {
-  booker: true,
-  passenger: { include: { profile: true } },
+  booker: { select: { id: true, name: true, email: true, role: true } },
+  passenger: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      profile: true,
+    },
+  },
   ticket: true,
   segments: {
     include: {
@@ -192,10 +200,10 @@ export async function createBooking(input: CreateBookingInput): Promise<BookingW
         "Rute penerbangan kepulangan harus kebalikan dari rute keberangkatan",
       );
     }
-    if (new Date(inbound.flight.departureAt) <= new Date(outbound.flight.departureAt)) {
+    if (new Date(inbound.flight.departureAt) <= new Date(outbound.flight.arrivalAt)) {
       throw new BookingError(
         "INVALID_DATE",
-        "Penerbangan kepulangan harus setelah penerbangan keberangkatan",
+        "Penerbangan kepulangan harus setelah penerbangan keberangkatan tiba",
       );
     }
   }
@@ -309,10 +317,13 @@ export async function cancelBooking(bookingId: string, userId: string) {
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.booking.update({
-      where: { id: bookingId },
+    const cancelled = await tx.booking.updateMany({
+      where: { id: bookingId, status: { not: "CANCELLED" } },
       data: { status: "CANCELLED", cancelledAt: new Date() },
     });
+    if (cancelled.count === 0) {
+      throw new BookingError("ALREADY_CANCELLED", "Pemesanan ini sudah dibatalkan");
+    }
     for (const segment of booking.segments) {
       await tx.flight.update({
         where: { id: segment.flightId },

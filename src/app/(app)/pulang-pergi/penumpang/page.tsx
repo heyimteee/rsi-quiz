@@ -37,7 +37,7 @@ export default async function RoundTripPassengerPage({ searchParams }: { searchP
     inbound &&
     outbound.originId === inbound.destinationId &&
     outbound.destinationId === inbound.originId &&
-    new Date(inbound.departureAt) > new Date(outbound.departureAt);
+    new Date(inbound.departureAt) > new Date(outbound.arrivalAt);
 
   const backHref = outbound
     ? `/pulang-pergi?cari=1&asal=${outbound.origin.code}&tujuan=${outbound.destination.code}&berangkat=${toDateInputValue(outbound.departureAt)}&pulang=${toDateInputValue(inbound?.departureAt ?? outbound.departureAt)}`

@@ -154,6 +154,61 @@ describe("createBooking", () => {
     );
   });
 
+  it("membuat pemesanan pulang-pergi dengan dua segmen dan total harga", async () => {
+    const outbound = makeFlight();
+    const inbound = makeFlight({
+      id: "flight-2",
+      flightNumber: "GA101",
+      originId: "airport-dps",
+      destinationId: "airport-cgk",
+      departureAt: dayAfter,
+      arrivalAt: new Date(dayAfter.getTime() + 110 * 60 * 1000),
+      price: 1_150_000,
+    });
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([outbound, inbound] as never);
+    bookingFindUnique.mockResolvedValue(null);
+    ticketFindUnique.mockResolvedValue(null);
+
+    const tx = {
+      flight: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      booking: {
+        create: vi.fn().mockResolvedValue({ id: "booking-pp" }),
+        findUniqueOrThrow: vi.fn().mockResolvedValue({ id: "booking-pp" }),
+      },
+      emailOutbox: { create: vi.fn().mockResolvedValue({ id: "email-pp" }) },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    const result = await createBooking({
+      bookerId: "passenger-1",
+      passengerId: "passenger-1",
+      tripType: "ROUND_TRIP",
+      segments: [
+        { flightId: "flight-1", leg: "OUTBOUND", sequence: 1 },
+        { flightId: "flight-2", leg: "RETURN", sequence: 2 },
+      ],
+    });
+
+    expect(result.id).toBe("booking-pp");
+    expect(tx.flight.updateMany).toHaveBeenCalledTimes(2);
+    expect(tx.booking.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tripType: "ROUND_TRIP",
+          totalPrice: 2_400_000,
+          segments: {
+            create: [
+              { flightId: "flight-1", leg: "OUTBOUND", sequence: 1 },
+              { flightId: "flight-2", leg: "RETURN", sequence: 2 },
+            ],
+          },
+        }),
+      }),
+    );
+  });
+
   it("menolak pemesanan jika profil tidak lengkap", async () => {
     userFindUnique.mockResolvedValue(
       makePassenger({ ...completeProfile, nik: null, birthDate: null }) as never,
@@ -224,7 +279,7 @@ describe("cancelBooking", () => {
     bookingFindUniqueOrThrow.mockResolvedValue({ ...booking, status: "CANCELLED" } as never);
 
     const tx = {
-      booking: { update: vi.fn().mockResolvedValue({ ...booking, status: "CANCELLED" }) },
+      booking: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       flight: { update: vi.fn().mockResolvedValue({}) },
     };
     transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
@@ -232,14 +287,35 @@ describe("cancelBooking", () => {
 
     const result = await cancelBooking("booking-1", "passenger-1");
     expect(result.id).toBe("booking-1");
-    expect(tx.booking.update).toHaveBeenCalledWith({
-      where: { id: "booking-1" },
+    expect(tx.booking.updateMany).toHaveBeenCalledWith({
+      where: { id: "booking-1", status: { not: "CANCELLED" } },
       data: expect.objectContaining({ status: "CANCELLED" }),
     });
     expect(tx.flight.update).toHaveBeenCalledWith({
       where: { id: "flight-1" },
       data: { seatsAvailable: { increment: 1 } },
     });
+  });
+
+  it("menolak pembatalan ganda secara atomik", async () => {
+    bookingFindUnique.mockResolvedValue({
+      id: "booking-1",
+      bookerId: "passenger-1",
+      passengerId: "passenger-1",
+      status: "CONFIRMED",
+      segments: [{ flightId: "flight-1", flight: { departureAt: tomorrow } }],
+    } as never);
+    const tx = {
+      booking: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      flight: { update: vi.fn() },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    await expect(cancelBooking("booking-1", "passenger-1")).rejects.toMatchObject({
+      code: "ALREADY_CANCELLED",
+    });
+    expect(tx.flight.update).not.toHaveBeenCalled();
   });
 
   it("menolak pembatalan oleh pengguna lain", async () => {

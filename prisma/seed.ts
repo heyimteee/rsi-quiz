@@ -435,6 +435,20 @@ async function main() {
       include: { segments: { include: { flight: { include: { airline: true, origin: true, destination: true } } } }, ticket: true },
     });
 
+    if (input.status === "CANCELLED") {
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { cancelledAt: NOW },
+      });
+    } else {
+      for (const item of input.flights) {
+        await prisma.flight.update({
+          where: { id: item.flight.id },
+          data: { seatsAvailable: { decrement: 1 } },
+        });
+      }
+    }
+
     if (input.sendEmail) {
       const passenger = await prisma.user.findUnique({ where: { id: input.passengerId } });
       const firstSegment = booking.segments[0];

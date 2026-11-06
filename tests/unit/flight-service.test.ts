@@ -70,6 +70,20 @@ describe("searchFlightOffers", () => {
     );
   });
 
+  it("membatasi hasil hari ini ke keberangkatan yang belum lewat", async () => {
+    flightFindMany.mockResolvedValue([] as never);
+    const before = Date.now();
+    await searchFlightOffers({
+      originCode: "CGK",
+      destinationCode: "DPS",
+      date: new Date(),
+    });
+    const call = flightFindMany.mock.calls.at(-1)?.[0] as
+      | { where: { departureAt: { gte: Date } } }
+      | undefined;
+    expect(call?.where.departureAt.gte.getTime()).toBeGreaterThanOrEqual(before);
+  });
+
   it("memfilter jendela waktu keberangkatan", async () => {
     flightFindMany.mockResolvedValue([flight] as never);
     const result = await searchFlightOffers({

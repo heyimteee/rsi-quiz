@@ -33,11 +33,12 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
     (summary, booking) => {
       summary.total += 1;
       if (booking.status === "CONFIRMED") summary.confirmed += 1;
+      else if (booking.status === "BOOKED") summary.booked += 1;
       else if (booking.status === "WAITING_FOR_PAYMENT") summary.waiting += 1;
       else if (booking.status === "CANCELLED") summary.cancelled += 1;
       return summary;
     },
-    { total: 0, confirmed: 0, waiting: 0, cancelled: 0 },
+    { total: 0, confirmed: 0, booked: 0, waiting: 0, cancelled: 0 },
   );
 
   return (
@@ -45,7 +46,7 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
       <PageHeader
         eyebrow="Pemesanan Tiket"
         title="Pemesanan Saya"
-        description="Melihat seluruh tiket yang Anda pesan, statusnya, dan membatalkan pemesanan yang masih memenuhi ketentuan."
+        description="Melihat seluruh tiket yang terkait dengan akun Anda, statusnya, dan membatalkan pemesanan yang masih memenuhi ketentuan."
         actions={
           <Link href="/penerbangan" className="btn-primary">
             <Plane className="size-4" aria-hidden />
@@ -65,11 +66,12 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
         </Alert>
       ) : null}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan pemesanan">
-        <StatCard label="Total pemesanan" value={counts.total} icon={ClipboardList} tone="sky" />
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Ringkasan pemesanan">
+        <StatCard label="Total" value={counts.total} icon={ClipboardList} tone="sky" />
         <StatCard label="Confirmed" value={counts.confirmed} icon={BadgeCheck} tone="green" />
-        <StatCard label="Menunggu pembayaran" value={counts.waiting} icon={Clock3} tone="amber" />
-        <StatCard label="Dibatalkan" value={counts.cancelled} icon={XCircle} tone="red" />
+        <StatCard label="Booked" value={counts.booked} icon={Ticket} tone="sky" />
+        <StatCard label="Waiting for Payment" value={counts.waiting} icon={Clock3} tone="amber" />
+        <StatCard label="Cancelled" value={counts.cancelled} icon={XCircle} tone="red" />
       </section>
 
       {bookings.length === 0 ? (
@@ -86,8 +88,9 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
       ) : (
         <div className="space-y-3">
           {bookings.map((booking) => {
-            const first = booking.segments[0]?.flight;
-            const last = booking.segments[booking.segments.length - 1]?.flight;
+            const outbound = booking.segments.find((segment) => segment.leg === "OUTBOUND") ?? booking.segments[0];
+            const inbound = booking.segments.find((segment) => segment.leg === "RETURN") ?? null;
+            const first = outbound?.flight;
             const earliest = booking.segments.reduce(
               (date, segment) =>
                 new Date(segment.flight.departureAt) < date
@@ -122,8 +125,14 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
                       </div>
                       <p className="mt-1 text-sm font-semibold">
                         {first?.origin.city} ({first?.origin.code}) →{" "}
-                        {last?.destination.city} ({last?.destination.code})
+                        {first?.destination.city} ({first?.destination.code})
                       </p>
+                      {inbound ? (
+                        <p className="text-xs text-muted">
+                          Pulang: {inbound.flight.origin.city} ({inbound.flight.origin.code}) →{" "}
+                          {inbound.flight.destination.city} ({inbound.flight.destination.code})
+                        </p>
+                      ) : null}
                       <p className="mt-0.5 text-xs text-muted">
                         {first ? formatDate(first.departureAt) : "—"} ·{" "}
                         {first?.airline.name} · {booking.passenger.name}

@@ -87,6 +87,12 @@ describe("flight search", () => {
     expect(summarizeFlights(flights).count).toBe(3);
   });
 
+  it("mengabaikan penerbangan yang kursinya habis saat mencari termurah", () => {
+    const soldOutCheapest = { ...flights[1], id: "sold-out", seatsAvailable: 0, price: 1 };
+    expect(getCheapestFlight([flights[0], soldOutCheapest])?.id).toBe("1");
+    expect(getCheapestFlight([soldOutCheapest])).toBeNull();
+  });
+
   it("membandingkan hari lokal", () => {
     expect(isSameLocalDay(new Date(2026, 10, 10, 1), new Date(2026, 10, 10, 23))).toBe(true);
     expect(isSameLocalDay(new Date(2026, 10, 10), new Date(2026, 10, 11))).toBe(false);
