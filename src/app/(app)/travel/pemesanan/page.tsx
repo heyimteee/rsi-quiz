@@ -43,7 +43,7 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
     : allBookings;
   const filtered = filterBookingsByStatus(withQuery, status);
 
-  const counts = allBookings.reduce(
+  const counts = withQuery.reduce(
     (summary, booking) => {
       summary.total += 1;
       if (booking.status === "CONFIRMED") summary.confirmed += 1;
@@ -78,7 +78,7 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
         }
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Ringkasan status pemesanan">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-5" aria-label="Ringkasan status pemesanan">
         <StatCard label="Total pemesanan" value={counts.total} icon={ClipboardList} tone="sky" />
         <StatCard label="Confirmed" value={counts.confirmed} icon={Ticket} tone="green" />
         <StatCard label="Booked" value={counts.booked} icon={Plane} tone="sky" />
@@ -153,7 +153,55 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
           }
         />
       ) : (
-        <div className="table-wrap">
+        <>
+          <div className="space-y-3 md:hidden">
+            {filtered.map((booking) => {
+              const outbound =
+                booking.segments.find((segment) => segment.leg === "OUTBOUND") ??
+                booking.segments[0];
+              const inbound = booking.segments.find((segment) => segment.leg === "RETURN");
+              const flight = outbound?.flight;
+              return (
+                <article key={booking.id} className="card p-4" data-testid="travel-booking-card">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Link
+                        href={`/travel/pemesanan/${booking.id}`}
+                        className="font-mono text-xs font-bold text-navy"
+                      >
+                        {booking.referenceCode}
+                      </Link>
+                      <p className="mt-1 text-sm font-semibold">
+                        {flight ? `${flight.origin.code} → ${flight.destination.code}` : "—"}
+                        {inbound ? " ↔" : ""}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted">{booking.passenger.name}</p>
+                    </div>
+                    <StatusBadge status={booking.status} />
+                  </div>
+                  <div className="mt-3 flex items-end justify-between gap-2 border-t border-line/70 pt-3">
+                    <div className="text-xs text-muted">
+                      <p>{flight ? formatDate(flight.departureAt) : "—"}</p>
+                      {inbound ? <p>Pulang: {formatDate(inbound.flight.departureAt)}</p> : null}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-extrabold text-navy">
+                        {formatIDR(booking.totalPrice)}
+                      </p>
+                      <Link
+                        href={`/travel/pemesanan/${booking.id}`}
+                        className="mt-1 inline-block text-xs font-semibold text-sky"
+                      >
+                        Lihat detail
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="table-wrap hidden md:block">
           <table className="data-table">
             <caption className="sr-only">Daftar pemesanan tiket dan statusnya</caption>
             <thead>
@@ -174,6 +222,7 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
                 const outbound =
                   booking.segments.find((segment) => segment.leg === "OUTBOUND") ??
                   booking.segments[0];
+                const inbound = booking.segments.find((segment) => segment.leg === "RETURN");
                 const flight = outbound?.flight;
                 return (
                   <tr key={booking.id} data-testid="travel-booking-row">
@@ -194,6 +243,11 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
                     </td>
                     <td className="whitespace-nowrap">
                       {flight ? `${flight.origin.code} → ${flight.destination.code}` : "—"}
+                      {inbound ? (
+                        <p className="mt-0.5 text-[10px] text-muted">
+                          Pulang: {inbound.flight.origin.code} → {inbound.flight.destination.code}
+                        </p>
+                      ) : null}
                     </td>
                     <td className="whitespace-nowrap">
                       {flight ? `${formatDate(flight.departureAt)} ${formatTime(flight.departureAt)}` : "—"}
@@ -215,7 +269,8 @@ export default async function TravelBookingListPage({ searchParams }: { searchPa
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

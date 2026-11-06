@@ -72,11 +72,11 @@ export default async function BookingDetailPage({
   return (
     <div className="space-y-6">
       <Link
-        href="/pemesanan"
+        href={user.role === "VISITOR" ? "/tiket-saya" : "/pemesanan"}
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink"
       >
         <ArrowLeft className="size-4" aria-hidden />
-        Kembali ke pemesanan saya
+        {user.role === "VISITOR" ? "Kembali ke tiket saya" : "Kembali ke pemesanan saya"}
       </Link>
 
       {firstParam(query.baru) ? (

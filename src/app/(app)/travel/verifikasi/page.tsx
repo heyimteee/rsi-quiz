@@ -33,9 +33,11 @@ type SearchParams = Promise<{ kode?: string | string[] }>;
 export default async function BookingVerificationPage({ searchParams }: { searchParams: SearchParams }) {
   await requireRole("TRAVEL_MANAGER");
   const params = await searchParams;
+  const submitted = params.kode !== undefined;
   const input = (firstParam(params.kode) ?? "").trim();
   const normalized = normalizeBookingReference(input);
   const booking = normalized ? await getBookingByReference(normalized) : null;
+  const cancelled = booking?.status === "CANCELLED";
   const outbound =
     booking?.segments.find((segment) => segment.leg === "OUTBOUND") ?? booking?.segments[0];
   const first = outbound?.flight;
@@ -84,7 +86,7 @@ export default async function BookingVerificationPage({ searchParams }: { search
         </form>
       </section>
 
-      {input && !booking ? (
+      {submitted && !booking ? (
         <Alert variant="error" title={MESSAGES.BOOKING_REFERENCE_INVALID}>
           Kode <strong>{normalized}</strong> tidak cocok dengan pemesanan mana pun. Periksa kembali
           kode booking reference dan coba lagi.
@@ -93,14 +95,26 @@ export default async function BookingVerificationPage({ searchParams }: { search
 
       {booking ? (
         <section className="card overflow-hidden" data-testid="reference-result">
-          <div className="flex flex-col gap-3 border-b border-line bg-green-soft/50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            className={`flex flex-col gap-3 border-b border-line p-5 sm:flex-row sm:items-center sm:justify-between ${
+              cancelled ? "bg-amber-soft/60" : "bg-green-soft/50"
+            }`}
+          >
             <div className="flex items-center gap-3">
-              <span className="flex size-10 items-center justify-center rounded-xl bg-green-soft text-emerald-700">
+              <span
+                className={`flex size-10 items-center justify-center rounded-xl ${
+                  cancelled ? "bg-amber-soft text-amber-700" : "bg-green-soft text-emerald-700"
+                }`}
+              >
                 <BadgeCheck className="size-5" aria-hidden />
               </span>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-                  Kode booking ditemukan
+                <p
+                  className={`text-xs font-semibold uppercase tracking-wide ${
+                    cancelled ? "text-amber-800" : "text-emerald-800"
+                  }`}
+                >
+                  {cancelled ? "Kode ditemukan · pemesanan dibatalkan" : "Kode booking ditemukan"}
                 </p>
                 <p className="font-mono text-lg font-extrabold tracking-wider text-navy">
                   {booking.referenceCode}
@@ -166,7 +180,7 @@ export default async function BookingVerificationPage({ searchParams }: { search
         </section>
       ) : null}
 
-      {!input ? (
+      {!submitted ? (
         <p className="text-xs leading-relaxed text-muted">
           Status yang ditampilkan adalah status terbaru pemesanan. Jika kode tidak sesuai, sistem
           akan menampilkan pesan “{MESSAGES.BOOKING_REFERENCE_INVALID}” dan meminta Anda

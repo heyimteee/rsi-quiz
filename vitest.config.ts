@@ -12,7 +12,11 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/lib/domain/**/*.ts", "src/lib/services/**/*.ts"],
+      include: [
+        "src/lib/domain/**/*.ts",
+        "src/lib/services/**/*.ts",
+        "src/lib/actions/travel-actions.ts",
+      ],
       reporter: ["text", "json-summary", "html"],
       thresholds: {
         lines: 70,

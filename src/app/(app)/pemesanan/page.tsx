@@ -26,6 +26,7 @@ type SearchParams = Promise<{ dibatalkan?: string; gagal?: string }>;
 
 export default async function MyBookingsPage({ searchParams }: { searchParams: SearchParams }) {
   const user = await requireRole(["PASSENGER", "MEMBER", "VISITOR"]);
+  const isVisitor = user.role === "VISITOR";
   const params = await searchParams;
   const bookings = await getBookingsForUser(user.id);
 
@@ -48,10 +49,17 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
         title="Pemesanan Saya"
         description="Melihat seluruh tiket yang terkait dengan akun Anda, statusnya, dan membatalkan pemesanan yang masih memenuhi ketentuan."
         actions={
-          <Link href="/penerbangan" className="btn-primary">
-            <Plane className="size-4" aria-hidden />
-            Cari penerbangan
-          </Link>
+          isVisitor ? (
+            <Link href="/tiket-saya" className="btn-secondary">
+              <Ticket className="size-4" aria-hidden />
+              Kembali ke tiket saya
+            </Link>
+          ) : (
+            <Link href="/penerbangan" className="btn-primary">
+              <Plane className="size-4" aria-hidden />
+              Cari penerbangan
+            </Link>
+          )
         }
       />
 
@@ -78,11 +86,21 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: S
         <EmptyState
           icon={Ticket}
           title="Belum ada pemesanan"
-          description="Anda belum memiliki tiket. Cari penerbangan sesuai tujuan dan tanggal perjalanan Anda."
+          description={
+            isVisitor
+              ? "Tiket yang dipesankan manajer travel atas nama Anda akan muncul di sini."
+              : "Anda belum memiliki tiket. Cari penerbangan sesuai tujuan dan tanggal perjalanan Anda."
+          }
           action={
-            <Link href="/penerbangan" className="btn-primary">
-              Cari penerbangan
-            </Link>
+            isVisitor ? (
+              <Link href="/tiket-saya" className="btn-secondary">
+                Kembali ke tiket saya
+              </Link>
+            ) : (
+              <Link href="/penerbangan" className="btn-primary">
+                Cari penerbangan
+              </Link>
+            )
           }
         />
       ) : (

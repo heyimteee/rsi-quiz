@@ -19,6 +19,7 @@ import {
   formatIDR,
   formatLongDate,
   formatTime,
+  maskNik,
 } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Pilih Pengunjung" };
@@ -49,7 +50,7 @@ export default async function TravelVisitorBookingPage({
       name: visitor.name,
       email: visitor.email,
       phone: visitor.profile?.phone ?? null,
-      nik: visitor.profile?.nik ?? null,
+      nikMasked: maskNik(visitor.profile?.nik),
       complete: completeness.complete,
     };
   });

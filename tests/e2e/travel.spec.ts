@@ -21,11 +21,30 @@ test.describe("studi kasus 07 - status pemesanan", () => {
     await page.getByRole("tab", { name: /Waiting for Payment/ }).click();
     await expect(page).toHaveURL(/status=WAITING_FOR_PAYMENT/);
     await expect(page.getByTestId("travel-booking-row")).toHaveCount(1);
-    await expect(page.getByText("TRV-DEMO02")).toBeVisible();
+    await expect(
+      page.getByTestId("travel-booking-row").filter({ hasText: "TRV-DEMO02" }),
+    ).toHaveCount(1);
 
     await page.getByRole("tab", { name: /^Semua/ }).click();
     await expect(page).toHaveURL(/status=all/);
     expect(await page.getByTestId("travel-booking-row").count()).toBeGreaterThanOrEqual(10);
+  });
+
+  test("memfilter status confirmed, booked, waiting, dan cancelled", async ({ page }) => {
+    await loginAsTravel(page);
+    for (const [status, label] of [
+      ["CONFIRMED", "Confirmed"],
+      ["BOOKED", "Booked"],
+      ["WAITING_FOR_PAYMENT", "Waiting for Payment"],
+      ["CANCELLED", "Cancelled"],
+    ] as const) {
+      await page.goto(`/travel/pemesanan?status=${status}`);
+      const rows = page.getByTestId("travel-booking-row");
+      expect(await rows.count()).toBeGreaterThanOrEqual(1);
+      for (const text of await rows.allTextContents()) {
+        expect(text).toContain(label);
+      }
+    }
   });
 
   test("mencari pemesanan berdasarkan kode booking", async ({ page }) => {
@@ -34,7 +53,9 @@ test.describe("studi kasus 07 - status pemesanan", () => {
     await page.getByRole("button", { name: "Cari" }).click();
     await expect(page).toHaveURL(/q=TRV-DEMO05/);
     await expect(page.getByTestId("travel-booking-row")).toHaveCount(1);
-    await expect(page.getByText("TRV-DEMO05")).toBeVisible();
+    await expect(
+      page.getByTestId("travel-booking-row").filter({ hasText: "TRV-DEMO05" }),
+    ).toHaveCount(1);
   });
 });
 
@@ -51,6 +72,9 @@ test.describe("studi kasus 08 - pesan untuk pengunjung", () => {
     await travelPage.getByRole("link", { name: /Pesan untuk pengunjung/ }).first().click();
     await expect(travelPage).toHaveURL(/\/travel\/pesan\/.+/);
     await expect(travelPage.getByTestId("visitor-booking-form")).toBeVisible();
+    const html = await travelPage.content();
+    expect(html).not.toContain("3171042209940004");
+    expect(html).not.toContain("3171050508880005");
 
     const visitorSelect = travelPage.getByLabel("Pengunjung", { exact: true });
     const optionValue = await visitorSelect
@@ -96,6 +120,9 @@ test.describe("studi kasus 09 - verifikasi kode booking", () => {
     await page.goto("/travel/verifikasi?kode=TRV-SALAH");
     await expect(page.getByText("Kode booking reference tidak sesuai").first()).toBeVisible();
     await expect(page.getByTestId("reference-result")).toHaveCount(0);
+
+    await page.goto("/travel/verifikasi?kode=%20%20%20");
+    await expect(page.getByText("Kode booking reference tidak sesuai").first()).toBeVisible();
 
     await page.getByLabel("Kode booking reference").fill(" trv-demo01 ");
     await page.getByRole("button", { name: "Periksa status" }).click();

@@ -8,7 +8,7 @@ import {
   bookForVisitorAction,
   type VisitorBookingState,
 } from "@/lib/actions/travel-actions";
-import { formatIDR, maskNik } from "@/lib/utils";
+import { formatIDR } from "@/lib/utils";
 
 const initialState: VisitorBookingState = {};
 
@@ -17,7 +17,7 @@ export type BookableVisitor = {
   name: string;
   email: string;
   phone: string | null;
-  nik: string | null;
+  nikMasked: string;
   complete: boolean;
 };
 
@@ -81,7 +81,7 @@ export function VisitorBookingForm({
           <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
             <div>
               <dt className="text-muted">NIK</dt>
-              <dd className="font-mono">{maskNik(selected.nik)}</dd>
+              <dd className="font-mono">{selected.nikMasked}</dd>
             </div>
             <div>
               <dt className="text-muted">Telepon</dt>

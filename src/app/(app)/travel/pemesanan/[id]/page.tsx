@@ -29,6 +29,12 @@ import {
 
 export const metadata: Metadata = { title: "Detail Pemesanan Travel" };
 
+const validationLabels: Record<string, string> = {
+  PENDING: "Belum divalidasi",
+  VALID: "Tervalidasi",
+  REJECTED: "Ditolak",
+};
+
 type SearchParams = Promise<{ baru?: string }>;
 
 export default async function TravelBookingDetailPage({
@@ -181,7 +187,9 @@ export default async function TravelBookingDetailPage({
               <div className="flex items-center justify-between">
                 <span className="text-muted">Status validasi</span>
                 <span className="text-xs font-semibold">
-                  {booking.ticket?.validationStatus ?? "—"}
+                  {validationLabels[booking.ticket?.validationStatus ?? "PENDING"] ??
+                    booking.ticket?.validationStatus ??
+                    "—"}
                 </span>
               </div>
             </div>
