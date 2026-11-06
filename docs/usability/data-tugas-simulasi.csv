@@ -1,0 +1,49 @@
+respondent,task_id,task_name,success,time_seconds,errors,seq
+R1,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,95,0,7
+R1,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,140,1,6
+R1,T3,Membandingkan harga sesuai preferensi dan memesan member,1,110,0,6
+R1,T4,Memperbarui profil dan memvalidasi tiket,1,125,0,6
+R1,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,160,1,6
+R1,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,115,1,6
+R2,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,120,1,6
+R2,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,185,2,5
+R2,T3,Membandingkan harga sesuai preferensi dan memesan member,1,135,1,5
+R2,T4,Memperbarui profil dan memvalidasi tiket,0,180,2,4
+R2,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,175,1,5
+R2,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,150,2,4
+R3,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,80,0,7
+R3,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,130,0,6
+R3,T3,Membandingkan harga sesuai preferensi dan memesan member,1,100,0,6
+R3,T4,Memperbarui profil dan memvalidasi tiket,1,115,0,6
+R3,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,150,1,6
+R3,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,105,1,6
+R4,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,105,0,6
+R4,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,160,1,5
+R4,T3,Membandingkan harga sesuai preferensi dan memesan member,1,125,1,6
+R4,T4,Memperbarui profil dan memvalidasi tiket,1,135,1,5
+R4,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,190,1,5
+R4,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,130,1,5
+R5,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,110,1,6
+R5,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,175,2,5
+R5,T3,Membandingkan harga sesuai preferensi dan memesan member,1,140,1,5
+R5,T4,Memperbarui profil dan memvalidasi tiket,1,150,1,5
+R5,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,0,210,3,4
+R5,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,155,2,4
+R6,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,90,0,7
+R6,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,145,1,6
+R6,T3,Membandingkan harga sesuai preferensi dan memesan member,1,115,0,6
+R6,T4,Memperbarui profil dan memvalidasi tiket,1,120,0,6
+R6,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,165,1,6
+R6,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,120,1,6
+R7,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,130,1,6
+R7,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,190,2,5
+R7,T3,Membandingkan harga sesuai preferensi dan memesan member,1,145,1,5
+R7,T4,Memperbarui profil dan memvalidasi tiket,1,160,1,5
+R7,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,200,2,5
+R7,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,0,160,3,4
+R8,T1,Menyaring cuti bulanan dan memeriksa sisa hak cuti,1,100,0,6
+R8,T2,Mencari penerbangan lalu memesan dan membatalkan tiket,1,150,1,6
+R8,T3,Membandingkan harga sesuai preferensi dan memesan member,1,120,1,6
+R8,T4,Memperbarui profil dan memvalidasi tiket,1,130,0,5
+R8,T5,Memfilter status dan memesan untuk pengunjung serta verifikasi kode,1,170,1,6
+R8,T6,Menangani error tanggal pulang lalu memesan pulang-pergi,1,125,1,5

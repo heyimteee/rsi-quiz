@@ -14,10 +14,11 @@ Status saat ini:
 - Studi kasus 08 (pemesanan untuk pengunjung + e-tiket) — selesai.
 - Studi kasus 09 (verifikasi kode booking) — selesai.
 - Studi kasus 10 (pulang-pergi) — selesai.
-- Dokumentasi pengujian (blackbox, whitebox, usability) — sprint berikutnya.
+- Dokumentasi pengujian (blackbox, whitebox, usability) — selesai.
 
-Seluruh 10 studi kasus sudah dapat didemokan. Dokumentasi pengujian dan bukti eksekusi
-dilengkapi pada sprint dokumentasi.
+Seluruh 10 studi kasus sudah dapat didemokan. Bukti eksekusi terakhir: **153 unit test**,
+**48 E2E test**, coverage inti **91,44% statements / 83,48% branches**, build produksi lulus.
+Dokumentasi lengkap ada di [`docs/`](docs/README.md).
 
 Modul 01 tersedia di `/hrd/cuti` untuk `hrd@demo.test`. Modul 02, 03, dan 10 tersedia
 untuk `penumpang@demo.test`. Modul 04–06 tersedia untuk `member@demo.test`; gunakan
@@ -79,7 +80,19 @@ npm run test           # unit test Vitest
 npm run test:coverage  # unit test + coverage
 npm run test:e2e       # Playwright E2E
 npm run verify         # lint + typecheck + coverage + build
+npm run verify:full    # semua + E2E (dipakai CI)
 ```
+
+## Dokumentasi pengujian
+
+- [Rencana pengujian](docs/01-rencana-pengujian.md)
+- [Blackbox testing](docs/02-blackbox-testing.md)
+- [Whitebox testing](docs/03-whitebox-testing.md)
+- [Usability testing (simulasi)](docs/04-usability-testing.md)
+- [Traceability matrix](docs/05-traceability-matrix.md)
+- [Hasil pengujian](docs/06-hasil-pengujian.md)
+- [Panduan demo](docs/panduan-demo.md)
+- [Pemetaan diagram](docs/pemetaan-diagram.md)
 
 ## Stack
 
@@ -99,7 +112,10 @@ src/lib/domain/         # logika bisnis murni (target whitebox testing)
 src/lib/services/       # query dan transaksi
 src/app/(app)/          # halaman setelah login
 src/app/login/          # autentikasi
-docs/                   # dokumen pengujian (ditambahkan pada sprint dokumentasi)
+tests/unit/             # Vitest (domain, service, action, validation)
+tests/e2e/              # Playwright (kasus, authz, IDOR, mobile)
+docs/                   # blackbox, whitebox, usability, traceability, evidence
+docs/diagram/           # 30 diagram konseptual
 ```
 
 ## Catatan
