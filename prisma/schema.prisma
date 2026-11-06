@@ -99,6 +99,7 @@ model Booking {
   tripType      String   @default("ONE_WAY")
   totalPrice    Int
   createdAt     DateTime @default(now())
+  cancelledAt   DateTime?
 
   booker    User             @relation("BookingsMade", fields: [bookerId], references: [id])
   passenger User             @relation("BookingsFor", fields: [passengerId], references: [id])

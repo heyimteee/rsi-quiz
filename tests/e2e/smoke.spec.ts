@@ -51,6 +51,16 @@ test.describe("fondasi aplikasi", () => {
     }
   });
 
+  test("HRD ditolak dari modul pemesanan tiket", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByRole("button", { name: /Manajer HRD/ }).click();
+    await expect(page).toHaveURL(/\/hrd\/cuti/);
+    for (const path of ["/penerbangan", "/penerbangan/bandingkan", "/pulang-pergi", "/pemesanan"]) {
+      await page.goto(path);
+      await expect(page).toHaveURL(/\/unauthorized/);
+    }
+  });
+
   test("pengunjung hanya melihat menu tiket saya", async ({ page }) => {
     await page.goto("/login");
     await page.getByRole("button", { name: /^Pengunjung pengunjung@demo/ }).click();
