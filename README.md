@@ -7,11 +7,15 @@ Status saat ini:
 - Studi kasus 01 (cuti HRD): daftar berbasis periode, detail, riwayat, dan sisa hak cuti — selesai.
 - Studi kasus 02 (cari, pesan, batalkan tiket) — selesai.
 - Studi kasus 03 (bandingkan dua tujuan) — selesai.
+- Studi kasus 04 (multi-destinasi & rencana perjalanan) — selesai.
+- Studi kasus 05 (profil & validasi tiket) — selesai.
+- Studi kasus 06 (preferensi, perbandingan harga, pemesanan member) — selesai.
 - Studi kasus 10 (pulang-pergi) — selesai.
-- Studi kasus 04–09 dan dokumentasi pengujian — sprint berikutnya.
+- Studi kasus 07–09 dan dokumentasi pengujian — sprint berikutnya.
 
 Modul 01 tersedia di `/hrd/cuti` untuk `hrd@demo.test`. Modul 02, 03, dan 10 tersedia
-untuk `penumpang@demo.test` melalui menu Calon Penumpang.
+untuk `penumpang@demo.test`. Modul 04–06 tersedia untuk `member@demo.test`; gunakan
+`member2@demo.test` untuk melihat penolakan validasi tiket saat profil belum lengkap.
 
 1. Pengajuan dan riwayat cuti pegawai (Manajer HRD)
 2. Pencarian, pemesanan, dan pembatalan tiket pesawat
