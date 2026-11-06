@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String
+  createdAt    DateTime @default(now())
+
+  profile      PassengerProfile?
+  employee     Employee?
+  bookingsMade Booking[]          @relation("BookingsMade")
+  bookingsFor  Booking[]          @relation("BookingsFor")
+  itineraries  Itinerary[]
+  validations  TicketValidation[]
+}
+
+model Employee {
+  id          String         @id @default(cuid())
+  userId      String?        @unique
+  name        String
+  nip         String         @unique
+  department  String
+  email       String
+  annualQuota Int            @default(12)
+  createdAt   DateTime       @default(now())
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  leave       LeaveRequest[]
+}
+
+model LeaveRequest {
+  id          String   @id @default(cuid())
+  employeeId  String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  status      String   @default("PENDING")
+  requestedAt DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([startDate, endDate])
+}
+
+model Airport {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  city         String
+  name         String
+  origins      Flight[] @relation("Origin")
+  destinations Flight[] @relation("Destination")
+  itineraryFrom ItinerarySegment[] @relation("ItineraryOrigin")
+  itineraryTo   ItinerarySegment[] @relation("ItineraryDestination")
+}
+
+model Airline {
+  id      String   @id @default(cuid())
+  code    String   @unique
+  name    String
+  flights Flight[]
+}
+
+model Flight {
+  id             String   @id @default(cuid())
+  flightNumber   String
+  airlineId      String
+  originId       String
+  destinationId  String
+  departureAt    DateTime
+  arrivalAt      DateTime
+  price          Int
+  seatsAvailable Int      @default(60)
+  createdAt      DateTime @default(now())
+
+  airline     Airline          @relation(fields: [airlineId], references: [id])
+  origin      Airport          @relation("Origin", fields: [originId], references: [id])
+  destination Airport          @relation("Destination", fields: [destinationId], references: [id])
+  segments    BookingSegment[]
+
+  @@index([originId, destinationId, departureAt])
+  @@index([departureAt])
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  referenceCode String   @unique
+  bookerId      String
+  passengerId   String
+  status        String   @default("WAITING_FOR_PAYMENT")
+  tripType      String   @default("ONE_WAY")
+  totalPrice    Int
+  createdAt     DateTime @default(now())
+
+  booker    User             @relation("BookingsMade", fields: [bookerId], references: [id])
+  passenger User             @relation("BookingsFor", fields: [passengerId], references: [id])
+  segments  BookingSegment[]
+  ticket    Ticket?
+  emails    EmailOutbox[]
+
+  @@index([status])
+  @@index([passengerId])
+}
+
+model BookingSegment {
+  id        String @id @default(cuid())
+  bookingId String
+  flightId  String
+  leg       String @default("OUTBOUND")
+  sequence  Int    @default(1)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  flight  Flight  @relation(fields: [flightId], references: [id])
+
+  @@index([bookingId])
+}
+
+model Ticket {
+  id               String    @id @default(cuid())
+  bookingId        String    @unique
+  ticketNumber     String    @unique
+  validationStatus String    @default("PENDING")
+  validatedAt      DateTime?
+
+  booking     Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  validations TicketValidation[]
+}
+
+model TicketValidation {
+  id          String   @id @default(cuid())
+  ticketId    String
+  profileId   String
+  status      String
+  message     String
+  createdAt   DateTime @default(now())
+
+  ticket  Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  profile User   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+model PassengerProfile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  fullName       String
+  nik            String?
+  phone          String?
+  birthDate      DateTime?
+  passportNumber String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Itinerary {
+  id        String   @id @default(cuid())
+  memberId  String
+  name      String
+  createdAt DateTime @default(now())
+
+  member   User               @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  segments ItinerarySegment[]
+
+  @@index([memberId])
+}
+
+model ItinerarySegment {
+  id            String   @id @default(cuid())
+  itineraryId   String
+  originId      String
+  destinationId String
+  departureDate DateTime
+  sequence      Int
+
+  itinerary   Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  origin      Airport   @relation("ItineraryOrigin", fields: [originId], references: [id])
+  destination Airport   @relation("ItineraryDestination", fields: [destinationId], references: [id])
+}
+
+model EmailOutbox {
+  id        String   @id @default(cuid())
+  bookingId String?
+  recipient String
+  subject   String
+  body      String
+  sentAt    DateTime @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+}

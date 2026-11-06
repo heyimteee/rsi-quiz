@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-canvas: #f3f6fa;
+  --color-surface: #ffffff;
+  --color-ink: #11263a;
+  --color-muted: #5c7286;
+  --color-line: #dbe5ee;
+  --color-navy: #0b2f4f;
+  --color-navy-soft: #164a70;
+  --color-sky: #0e7490;
+  --color-sky-soft: #e5f4f7;
+  --color-amber-soft: #fff5df;
+  --color-green-soft: #e8f7ee;
+  --color-red-soft: #fdecec;
+
+  --shadow-card: 0 1px 2px rgba(15, 40, 66, 0.04), 0 18px 40px -32px rgba(15, 40, 66, 0.35);
+  --shadow-lift: 0 2px 4px rgba(15, 40, 66, 0.05), 0 24px 48px -28px rgba(15, 40, 66, 0.38);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: #bfe8ef;
+    color: var(--color-navy);
+  }
+
+  :focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--color-sky) 45%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  .card-flat {
+    @apply rounded-2xl border border-line bg-surface;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-navy text-white shadow-sm hover:bg-navy-soft active:translate-y-px;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-white text-ink hover:border-sky/40 hover:bg-sky-soft/60;
+  }
+
+  .btn-ghost {
+    @apply text-muted hover:bg-canvas hover:text-ink;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .btn-sm {
+    @apply rounded-lg px-3 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/60 focus:border-sky focus:ring-4 focus:ring-sky/10;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+
+  .helper {
+    @apply mt-1.5 text-xs leading-relaxed text-muted;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto rounded-2xl border border-line bg-surface;
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-left text-sm;
+  }
+
+  .data-table thead {
+    @apply bg-canvas/80 text-[11px] uppercase tracking-wider text-muted;
+  }
+
+  .data-table th {
+    @apply whitespace-nowrap px-4 py-3 font-semibold;
+  }
+
+  .data-table td {
+    @apply border-t border-line/70 px-4 py-3.5 align-middle;
+  }
+
+  .data-table tbody tr {
+    @apply transition-colors hover:bg-sky-soft/30;
+  }
+
+  .link {
+    @apply font-semibold text-sky underline-offset-4 hover:underline;
+  }
+
+  .field-grid {
+    @apply grid gap-4 sm:grid-cols-2;
+  }
+
+  .section-title {
+    @apply text-lg font-bold tracking-tight text-ink;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.18em] text-sky;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-rise {
+    animation: rise 0.35s ease-out both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+}
