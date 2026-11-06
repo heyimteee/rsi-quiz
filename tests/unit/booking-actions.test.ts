@@ -79,6 +79,7 @@ describe("bookFlightAction", () => {
     const result = await bookFlightAction({}, form({ ...identity, flightId: "flight-1" }));
 
     expect(result).toBeUndefined();
+    expect(requireRoleMock).toHaveBeenCalledWith(["PASSENGER", "MEMBER"]);
     expect(updateProfileMock).toHaveBeenCalledWith("passenger-1", {
       fullName: identity.fullName,
       nik: identity.nik,
@@ -93,6 +94,15 @@ describe("bookFlightAction", () => {
     });
     expect(revalidateMock).toHaveBeenCalledWith("/pemesanan");
     expect(redirectMock).toHaveBeenCalledWith("/pemesanan/booking-1?baru=1");
+  });
+
+  it("tidak melanjutkan jika otorisasi peran ditolak", async () => {
+    requireRoleMock.mockRejectedValue(new Error("NEXT_REDIRECT"));
+    await expect(
+      bookFlightAction({}, form({ ...identity, flightId: "flight-1" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+    expect(updateProfileMock).not.toHaveBeenCalled();
+    expect(createBookingMock).not.toHaveBeenCalled();
   });
 
   it("menolak jika penerbangan tidak dipilih", async () => {

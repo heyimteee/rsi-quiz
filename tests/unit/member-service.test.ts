@@ -75,6 +75,13 @@ describe("validateMemberTicket", () => {
     await expect(validateMemberTicket("member-1", "missing")).rejects.toBeInstanceOf(MemberError);
   });
 
+  it("menolak jika pemesanan tidak memiliki tiket", async () => {
+    bookingFindFirst.mockResolvedValue(makeTicketBooking({ ticket: null }) as never);
+    await expect(validateMemberTicket("member-1", "booking-1")).rejects.toMatchObject({
+      code: "TICKET_NOT_FOUND",
+    });
+  });
+
   it("mengembalikan status valid tanpa duplikasi jika sudah tervalidasi", async () => {
     bookingFindFirst.mockResolvedValue(
       makeTicketBooking({

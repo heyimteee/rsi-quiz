@@ -11,7 +11,9 @@ test.describe("studi kasus 01 - cuti HRD", () => {
     await loginAsHrd(page);
     await expect(page.getByRole("heading", { name: "Daftar Pengajuan Cuti" })).toBeVisible();
     const rows = page.getByTestId("leave-row");
-    const expected = new Date().getMonth() === 11 ? 9 : 8;
+    const month = new Date().getMonth();
+    const expected =
+      8 + ([0, 1, 2].includes(month) ? 1 : 0) + (month === 11 ? 1 : 0);
     await expect(rows).toHaveCount(expected);
     await expect(page.getByText("Pegawai mengajukan")).toBeVisible();
   });

@@ -251,6 +251,141 @@ describe("createBooking", () => {
     ).rejects.toBeInstanceOf(BookingError);
   });
 
+  it.each([
+    ["tanpa segmen", [], "NO_SEGMENT"],
+    [
+      "sekali jalan dengan dua segmen",
+      [
+        { flightId: "flight-1", leg: "OUTBOUND" as const, sequence: 1 },
+        { flightId: "flight-2", leg: "OUTBOUND" as const, sequence: 2 },
+      ],
+      "INVALID_SEGMENTS",
+    ],
+  ])("menolak %s", async (_label, segments, code) => {
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ONE_WAY",
+        segments,
+      }),
+    ).rejects.toMatchObject({ code });
+  });
+
+  it("menolak pulang-pergi dengan satu segmen", async () => {
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ROUND_TRIP",
+        segments: [{ flightId: "flight-1", leg: "OUTBOUND", sequence: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_SEGMENTS" });
+  });
+
+  it("menolak penerbangan duplikat", async () => {
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ROUND_TRIP",
+        segments: [
+          { flightId: "flight-1", leg: "OUTBOUND", sequence: 1 },
+          { flightId: "flight-1", leg: "RETURN", sequence: 2 },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: "DUPLICATE_FLIGHT" });
+  });
+
+  it("menolak jika penumpang tidak ditemukan", async () => {
+    userFindUnique.mockResolvedValue(null);
+    await expect(
+      createBooking({
+        bookerId: "missing",
+        passengerId: "missing",
+        tripType: "ONE_WAY",
+        segments: [{ flightId: "flight-1", leg: "OUTBOUND", sequence: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: "PASSENGER_NOT_FOUND" });
+  });
+
+  it("menolak jika penerbangan tidak ditemukan", async () => {
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([]);
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ONE_WAY",
+        segments: [{ flightId: "missing", leg: "OUTBOUND", sequence: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: "FLIGHT_NOT_FOUND" });
+  });
+
+  it("menolak penerbangan yang sudah lewat", async () => {
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([
+      makeFlight({
+        departureAt: new Date(Date.now() - 3_600_000),
+        arrivalAt: new Date(Date.now() - 1_800_000),
+      }),
+    ] as never);
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ONE_WAY",
+        segments: [{ flightId: "flight-1", leg: "OUTBOUND", sequence: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: "FLIGHT_DEPARTED" });
+  });
+
+  it("menolak pulang-pergi tanpa segmen kepulangan", async () => {
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([
+      makeFlight(),
+      makeFlight({ id: "flight-2", departureAt: dayAfter }),
+    ] as never);
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ROUND_TRIP",
+        segments: [
+          { flightId: "flight-1", leg: "OUTBOUND", sequence: 1 },
+          { flightId: "flight-2", leg: "OUTBOUND", sequence: 2 },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_SEGMENTS" });
+  });
+
+  it("menolak kepulangan sebelum keberangkatan tiba", async () => {
+    const outbound = makeFlight({
+      departureAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      arrivalAt: new Date(Date.now() + 26 * 60 * 60 * 1000),
+    });
+    const inbound = makeFlight({
+      id: "flight-2",
+      originId: "airport-dps",
+      destinationId: "airport-cgk",
+      departureAt: new Date(Date.now() + 25 * 60 * 60 * 1000),
+      arrivalAt: new Date(Date.now() + 27 * 60 * 60 * 1000),
+    });
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([outbound, inbound] as never);
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ROUND_TRIP",
+        segments: [
+          { flightId: "flight-1", leg: "OUTBOUND", sequence: 1 },
+          { flightId: "flight-2", leg: "RETURN", sequence: 2 },
+        ],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_DATE" });
+  });
+
   it("menolak jika kursi habis", async () => {
     userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
     flightFindMany.mockResolvedValue([makeFlight({ seatsAvailable: 0 })] as never);
@@ -263,6 +398,30 @@ describe("createBooking", () => {
         segments: [{ flightId: "flight-1", leg: "OUTBOUND", sequence: 1 }],
       }),
     ).rejects.toMatchObject({ code: "SEAT_UNAVAILABLE" });
+  });
+
+  it("membatalkan transaksi jika kursi diambil request lain", async () => {
+    userFindUnique.mockResolvedValue(makePassenger(completeProfile) as never);
+    flightFindMany.mockResolvedValue([makeFlight()] as never);
+    bookingFindUnique.mockResolvedValue(null);
+    ticketFindUnique.mockResolvedValue(null);
+    const tx = {
+      flight: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      booking: { create: vi.fn() },
+      emailOutbox: { create: vi.fn() },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    await expect(
+      createBooking({
+        bookerId: "passenger-1",
+        passengerId: "passenger-1",
+        tripType: "ONE_WAY",
+        segments: [{ flightId: "flight-1", leg: "OUTBOUND", sequence: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: "SEAT_UNAVAILABLE" });
+    expect(tx.booking.create).not.toHaveBeenCalled();
   });
 });
 
@@ -295,6 +454,49 @@ describe("cancelBooking", () => {
       where: { id: "flight-1" },
       data: { seatsAvailable: { increment: 1 } },
     });
+  });
+
+  it("menolak pembatalan jika pemesanan tidak ditemukan", async () => {
+    bookingFindUnique.mockResolvedValue(null);
+    await expect(cancelBooking("missing", "passenger-1")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+
+  it("menolak pembatalan pemesanan yang sudah dibatalkan", async () => {
+    bookingFindUnique.mockResolvedValue({
+      id: "booking-1",
+      bookerId: "passenger-1",
+      passengerId: "passenger-1",
+      status: "CANCELLED",
+      segments: [{ flightId: "flight-1", flight: { departureAt: tomorrow } }],
+    } as never);
+    await expect(cancelBooking("booking-1", "passenger-1")).rejects.toMatchObject({
+      code: "ALREADY_CANCELLED",
+    });
+  });
+
+  it("mengembalikan kursi untuk semua segmen pulang-pergi", async () => {
+    bookingFindUnique.mockResolvedValue({
+      id: "booking-pp",
+      bookerId: "passenger-1",
+      passengerId: "passenger-1",
+      status: "CONFIRMED",
+      segments: [
+        { flightId: "flight-1", flight: { departureAt: tomorrow } },
+        { flightId: "flight-2", flight: { departureAt: dayAfter } },
+      ],
+    } as never);
+    bookingFindUniqueOrThrow.mockResolvedValue({ id: "booking-pp" } as never);
+    const tx = {
+      booking: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      flight: { update: vi.fn().mockResolvedValue({}) },
+    };
+    transaction.mockImplementation((async (callback: (client: typeof tx) => unknown) =>
+      callback(tx)) as never);
+
+    await cancelBooking("booking-pp", "passenger-1");
+    expect(tx.flight.update).toHaveBeenCalledTimes(2);
   });
 
   it("menolak pembatalan ganda secara atomik", async () => {

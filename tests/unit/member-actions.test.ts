@@ -93,6 +93,7 @@ describe("updateProfileAction", () => {
   it("menyimpan profil, memperbarui sesi, dan mengembalikan sukses", async () => {
     const result = await updateProfileAction({}, form({ ...identity, passportNumber: "C7654321" }));
     expect(result.success).toBe("Data profil berhasil diperbarui");
+    expect(requireRoleMock).toHaveBeenCalledWith("MEMBER");
     expect(updateProfileMock).toHaveBeenCalledWith("member-1", {
       fullName: identity.fullName,
       nik: identity.nik,
@@ -102,6 +103,12 @@ describe("updateProfileAction", () => {
     });
     expect(createSessionMock).toHaveBeenCalled();
     expect(revalidateMock).toHaveBeenCalledWith("/member/profil");
+  });
+
+  it("tidak menyimpan jika otorisasi peran ditolak", async () => {
+    requireRoleMock.mockRejectedValue(new Error("NEXT_REDIRECT"));
+    await expect(updateProfileAction({}, form(identity))).rejects.toThrow("NEXT_REDIRECT");
+    expect(updateProfileMock).not.toHaveBeenCalled();
   });
 
   it("mengembalikan error field untuk NIK tidak valid", async () => {

@@ -36,6 +36,20 @@ test.describe("tampilan seluler 390px", () => {
     await expect(page.getByTestId("travel-booking-card").first()).toBeVisible();
     await expect(page.getByTestId("travel-booking-row").first()).toBeHidden();
     await expectNoPageOverflow(page);
+
+    await page.getByRole("tab", { name: /Cancelled/ }).click();
+    await expect(page).toHaveURL(/status=CANCELLED/);
+    await expect(page.getByTestId("travel-booking-card").first()).toBeVisible();
+    await expectNoPageOverflow(page);
+  });
+
+  test("detail cuti HRD dapat dibuka pada layar kecil", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByRole("button", { name: /Manajer HRD/ }).click();
+    await expect(page).toHaveURL(/\/hrd\/cuti/);
+    await page.getByRole("link", { name: /Lihat detail cuti/ }).first().click();
+    await expect(page.getByRole("heading", { name: "Detail Pengajuan Cuti" })).toBeVisible();
+    await expectNoPageOverflow(page);
   });
 
   test("pencarian member dan form pemesanan tetap dapat digunakan", async ({ page }) => {

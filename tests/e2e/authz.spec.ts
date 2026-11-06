@@ -19,12 +19,19 @@ const routes = [
   { path: "/hrd/pegawai", allowed: ["HRD_MANAGER"] },
   { path: "/member/profil", allowed: ["MEMBER"] },
   { path: "/member/validasi", allowed: ["MEMBER"] },
+  { path: "/member/penerbangan", allowed: ["MEMBER"] },
+  { path: "/member/rencana", allowed: ["MEMBER"] },
+  { path: "/member/rencana/baru", allowed: ["MEMBER"] },
+  { path: "/member/pencarian-multi", allowed: ["MEMBER"] },
   { path: "/travel/pemesanan", allowed: ["TRAVEL_MANAGER"] },
+  { path: "/travel/cari", allowed: ["TRAVEL_MANAGER"] },
   { path: "/travel/verifikasi", allowed: ["TRAVEL_MANAGER"] },
   { path: "/dev/email", allowed: ["TRAVEL_MANAGER"] },
   { path: "/tiket-saya", allowed: ["VISITOR"] },
   { path: "/penerbangan", allowed: ["PASSENGER", "MEMBER"] },
+  { path: "/penerbangan/bandingkan", allowed: ["PASSENGER", "MEMBER"] },
   { path: "/pulang-pergi", allowed: ["PASSENGER", "MEMBER"] },
+  { path: "/pulang-pergi/penumpang", allowed: ["PASSENGER", "MEMBER"] },
   { path: "/pemesanan", allowed: ["PASSENGER", "MEMBER", "VISITOR"] },
 ];
 
@@ -45,6 +52,7 @@ test.describe("matriks otorisasi peran", () => {
         await page.goto(route.path);
         if (route.allowed.includes(roleKey)) {
           await expect(page).not.toHaveURL(/\/unauthorized/);
+          await expect(page.locator("main#main-content")).toBeVisible();
         } else {
           await expect(page).toHaveURL(/\/unauthorized/);
         }

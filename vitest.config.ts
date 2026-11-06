@@ -18,6 +18,7 @@ export default defineConfig({
         "src/lib/actions/travel-actions.ts",
         "src/lib/actions/booking-actions.ts",
         "src/lib/actions/member-actions.ts",
+        "src/lib/validation/**/*.ts",
       ],
       reporter: ["text", "json-summary", "html"],
       thresholds: {

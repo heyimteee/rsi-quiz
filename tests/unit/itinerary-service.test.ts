@@ -23,7 +23,13 @@ const segmentCreate = vi.mocked(prisma.itinerarySegment.create);
 
 const airport = (id: string, code: string, city: string) => ({ id, code, city, name: city });
 
-function makeItinerary(segmentCount = 2) {
+function futureDate(offsetDays: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function makeItinerary(segmentCount = 2, startOffset = 5) {
   return {
     id: "itinerary-1",
     memberId: "member-1",
@@ -34,7 +40,7 @@ function makeItinerary(segmentCount = 2) {
       itineraryId: "itinerary-1",
       originId: index === 0 ? "airport-cgk" : "airport-dps",
       destinationId: index === 0 ? "airport-dps" : "airport-sub",
-      departureDate: new Date(2026, 10, 10 + index),
+      departureDate: futureDate(startOffset + index),
       sequence: index + 1,
       origin: airport(index === 0 ? "airport-cgk" : "airport-dps", index === 0 ? "CGK" : "DPS", "Kota"),
       destination: airport(index === 0 ? "airport-dps" : "airport-sub", index === 0 ? "DPS" : "SUB", "Kota"),
@@ -43,8 +49,8 @@ function makeItinerary(segmentCount = 2) {
 }
 
 const validSegments = [
-  { originId: "airport-cgk", destinationId: "airport-dps", departureDate: new Date(2026, 10, 10) },
-  { originId: "airport-dps", destinationId: "airport-sub", departureDate: new Date(2026, 10, 12) },
+  { originId: "airport-cgk", destinationId: "airport-dps", departureDate: futureDate(3) },
+  { originId: "airport-dps", destinationId: "airport-sub", departureDate: futureDate(5) },
 ];
 
 beforeEach(() => {
@@ -115,8 +121,16 @@ describe("createItinerary", () => {
   it("menolak tanggal rute yang tidak berurutan", async () => {
     await expect(
       createItinerary("member-1", "Liburan", [
-        { ...validSegments[0], departureDate: new Date(2026, 10, 12) },
-        { ...validSegments[1], departureDate: new Date(2026, 10, 10) },
+        { ...validSegments[0], departureDate: futureDate(8) },
+        { ...validSegments[1], departureDate: futureDate(5) },
+      ]),
+    ).rejects.toMatchObject({ code: "INVALID_DATE" });
+  });
+
+  it("menolak tanggal rute di masa lalu", async () => {
+    await expect(
+      createItinerary("member-1", "Liburan", [
+        { ...validSegments[0], departureDate: futureDate(-2) },
       ]),
     ).rejects.toMatchObject({ code: "INVALID_DATE" });
   });
@@ -177,12 +191,23 @@ describe("addItinerarySegment", () => {
   });
 
   it("menolak tanggal sebelum rute terakhir", async () => {
+    itineraryFindFirst.mockResolvedValue(makeItinerary(2, 10) as never);
+    await expect(
+      addItinerarySegment("itinerary-1", "member-1", {
+        originId: "airport-sub",
+        destinationId: "airport-cgk",
+        departureDate: futureDate(8),
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_DATE" });
+  });
+
+  it("menolak tanggal rute di masa lalu", async () => {
     itineraryFindFirst.mockResolvedValue(makeItinerary(2) as never);
     await expect(
       addItinerarySegment("itinerary-1", "member-1", {
         originId: "airport-sub",
         destinationId: "airport-cgk",
-        departureDate: new Date(2026, 10, 1),
+        departureDate: futureDate(-1),
       }),
     ).rejects.toMatchObject({ code: "INVALID_DATE" });
   });
