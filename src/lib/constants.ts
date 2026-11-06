@@ -44,6 +44,21 @@ export const BOOKING_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Cancelled",
 };
 
+export const MONTH_NAMES = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+] as const;
+
 export const LEAVE_STATUS_LABELS: Record<string, string> = {
   APPROVED: "Disetujui",
   PENDING: "Menunggu",

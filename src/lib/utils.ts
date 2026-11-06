@@ -114,6 +114,11 @@ export function initials(name: string) {
     .join("");
 }
 
+export function firstParam(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 export function maskNik(nik: string | null | undefined) {
   if (!nik) return "—";
   if (nik.length < 8) return nik;
