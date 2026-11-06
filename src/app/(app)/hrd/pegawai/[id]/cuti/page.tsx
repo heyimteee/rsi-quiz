@@ -22,7 +22,7 @@ import { firstParam, formatDate, formatDateTime, initials } from "@/lib/utils";
 export const metadata: Metadata = { title: "Riwayat Cuti Pegawai" };
 
 type Params = Promise<{ id: string }>;
-type SearchParams = Promise<{ tahun?: string | string[] }>;
+type SearchParams = Promise<{ tahun?: string | string[]; q?: string | string[] }>;
 
 export default async function EmployeeLeaveHistoryPage({
   params,
@@ -39,6 +39,8 @@ export default async function EmployeeLeaveHistoryPage({
   const selectedYearRaw = firstParam(query.tahun);
   const selectedYear = selectedYearRaw ? Number.parseInt(selectedYearRaw, 10) : null;
   const yearFilter = Number.isFinite(selectedYear) ? selectedYear : null;
+  const searchQuery = (firstParam(query.q) ?? "").trim();
+  const backHref = `/hrd/pegawai${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`;
 
   const filteredHistory = yearFilter
     ? data.history.filter((request) => {
@@ -48,12 +50,14 @@ export default async function EmployeeLeaveHistoryPage({
       })
     : data.history;
 
-  const yearOptions = Array.from(new Set([...data.years, data.currentYear])).sort((a, b) => b - a);
+  const yearOptions = Array.from(
+    new Set([...data.years, data.currentYear, ...(yearFilter ? [yearFilter] : [])]),
+  ).sort((a, b) => b - a);
 
   return (
     <div className="space-y-6">
       <Link
-        href="/hrd/pegawai"
+        href={backHref}
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink"
       >
         <ArrowLeft className="size-4" aria-hidden />

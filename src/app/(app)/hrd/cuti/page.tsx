@@ -43,8 +43,9 @@ export default async function LeaveListPage({ searchParams }: { searchParams: Se
     Math.max(2000, parseInteger(firstParam(params.tahun), now.getFullYear())),
   );
   const dayParam = firstParam(params.tanggal)?.trim();
-  const parsedDay = dayParam ? Number.parseInt(dayParam, 10) : undefined;
+  const parsedDay = dayParam && /^\d+$/.test(dayParam) ? Number.parseInt(dayParam, 10) : undefined;
   const day = Number.isFinite(parsedDay) ? parsedDay : undefined;
+  const invalidDayParam = Boolean(dayParam) && day === undefined;
 
   const period = { day, month, year };
   const validRange = leavePeriodRange(period);
@@ -55,7 +56,12 @@ export default async function LeaveListPage({ searchParams }: { searchParams: Se
     ? `${day} ${MONTH_NAMES[month - 1]} ${year}`
     : `${MONTH_NAMES[month - 1]} ${year}`;
 
-  const yearOptions = Array.from({ length: 5 }, (_, index) => now.getFullYear() - 2 + index);
+  const yearOptions = Array.from(
+    new Set([...Array.from({ length: 5 }, (_, index) => now.getFullYear() - 2 + index), year]),
+  ).sort((a, b) => a - b);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const detailQuery = new URLSearchParams({ bulan: String(month), tahun: String(year) });
+  if (validRange && day) detailQuery.set("tanggal", String(day));
 
   return (
     <div className="space-y-6">
@@ -101,9 +107,14 @@ export default async function LeaveListPage({ searchParams }: { searchParams: Se
             <label htmlFor="tanggal" className="label">
               Tanggal <span className="normal-case tracking-normal">(opsional)</span>
             </label>
-            <select id="tanggal" name="tanggal" defaultValue={day ? String(day) : ""} className="input">
+            <select
+              id="tanggal"
+              name="tanggal"
+              defaultValue={validRange && day ? String(day) : ""}
+              className="input"
+            >
               <option value="">Seluruh bulan</option>
-              {Array.from({ length: 31 }, (_, index) => index + 1).map((option) => (
+              {Array.from({ length: daysInMonth }, (_, index) => index + 1).map((option) => (
                 <option key={option} value={option}>
                   Tanggal {option}
                 </option>
@@ -127,10 +138,11 @@ export default async function LeaveListPage({ searchParams }: { searchParams: Se
         </p>
       </section>
 
-      {!validRange ? (
+      {!validRange || invalidDayParam ? (
         <Alert variant="warning" title="Tanggal tidak valid">
-          Tanggal {day} tidak tersedia pada {MONTH_NAMES[month - 1]} {year}. Filter
-          ditampilkan untuk seluruh bulan.
+          {invalidDayParam
+            ? "Nilai tanggal harus berupa angka bulat. Filter ditampilkan untuk seluruh bulan."
+            : `Tanggal ${day} tidak tersedia pada ${MONTH_NAMES[month - 1]} ${year}. Filter ditampilkan untuk seluruh bulan.`}
         </Alert>
       ) : null}
 
@@ -215,7 +227,7 @@ export default async function LeaveListPage({ searchParams }: { searchParams: Se
                     </td>
                     <td className="text-right">
                       <Link
-                        href={`/hrd/cuti/${row.id}`}
+                        href={`/hrd/cuti/${row.id}?${detailQuery.toString()}`}
                         className="btn-secondary btn-sm"
                         aria-label={`Lihat detail cuti ${row.employee.name}`}
                       >

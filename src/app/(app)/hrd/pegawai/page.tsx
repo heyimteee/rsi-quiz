@@ -125,7 +125,7 @@ export default async function EmployeeListPage({ searchParams }: { searchParams:
                     <td>
                       <p className="font-semibold">{item.totalRequests}</p>
                       <p className="text-xs text-muted">
-                        {item.lastLeave ? `Terakhir ${formatDate(item.lastLeave.startDate)}` : "Belum ada"}
+                        {item.lastLeave ? `Pengajuan terbaru ${formatDate(item.lastLeave.startDate)}` : "Belum ada"}
                       </p>
                     </td>
                     <td className="min-w-40">
@@ -153,7 +153,7 @@ export default async function EmployeeListPage({ searchParams }: { searchParams:
                     </td>
                     <td className="text-right">
                       <Link
-                        href={`/hrd/pegawai/${item.employee.id}/cuti`}
+                        href={`/hrd/pegawai/${item.employee.id}/cuti${query ? `?q=${encodeURIComponent(query)}` : ""}`}
                         className="btn-secondary btn-sm"
                         aria-label={`Lihat riwayat cuti ${item.employee.name}`}
                       >

@@ -118,7 +118,10 @@ export async function getEmployeeSummaries(): Promise<EmployeeSummary[]> {
       used: balance.used,
       remaining: balance.remaining,
       totalRequests: employee.leave.length,
-      lastLeave: employee.leave[0] ?? null,
+      lastLeave:
+        [...employee.leave].sort(
+          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+        )[0] ?? null,
     };
   });
 }
@@ -134,7 +137,8 @@ export async function getEmployeeLeaveHistory(employeeId: string) {
 
   const years = getLeaveYears(employee.leave);
   const currentYear = new Date().getFullYear();
-  const quotaByYear = years.map((year) => ({
+  const allYears = Array.from(new Set([...years, currentYear])).sort((a, b) => b - a);
+  const quotaByYear = allYears.map((year) => ({
     year,
     ...calculateRemainingLeave(employee.annualQuota, employee.leave, year),
   }));

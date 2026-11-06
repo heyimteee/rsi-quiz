@@ -15,25 +15,42 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Alert } from "@/components/ui/alert";
 import { getLeaveDetail } from "@/lib/services/leave-service";
 import { LEAVE_STATUS_LABELS, MONTH_NAMES } from "@/lib/constants";
-import { formatDate, formatDateTime, initials } from "@/lib/utils";
+import { firstParam, formatDate, formatDateTime, initials } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Detail Pengajuan Cuti" };
 
+type SearchParams = Promise<{
+  bulan?: string | string[];
+  tahun?: string | string[];
+  tanggal?: string | string[];
+}>;
+
 export default async function LeaveDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: SearchParams;
 }) {
   const { id } = await params;
+  const query = await searchParams;
   const leave = await getLeaveDetail(id);
   if (!leave) notFound();
 
   const start = new Date(leave.startDate);
   const currentYear = new Date().getFullYear();
+  const backParams = new URLSearchParams();
+  const bulan = Number.parseInt(firstParam(query.bulan) ?? "", 10);
+  const tahun = Number.parseInt(firstParam(query.tahun) ?? "", 10);
+  const tanggal = Number.parseInt(firstParam(query.tanggal) ?? "", 10);
+  if (bulan >= 1 && bulan <= 12) backParams.set("bulan", String(bulan));
+  if (tahun >= 2000) backParams.set("tahun", String(tahun));
+  if (tanggal >= 1 && tanggal <= 31) backParams.set("tanggal", String(tanggal));
+  const backHref = `/hrd/cuti${backParams.toString() ? `?${backParams.toString()}` : ""}`;
 
   return (
     <div className="space-y-6">
-      <Link href="/hrd/cuti" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
+      <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
         <ArrowLeft className="size-4" aria-hidden />
         Kembali ke daftar pengajuan
       </Link>

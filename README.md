@@ -1,8 +1,13 @@
 # TravelKu — Sistem Informasi Perjalanan & Manajemen Cuti
 
-Implementasi bertahap 10 studi kasus RSI dalam satu aplikasi Next.js. Status saat ini:
-fondasi (autentikasi, peran, database, seed, desain) selesai; modul studi kasus dan
-dokumentasi pengujian dikerjakan pada sprint berikutnya.
+Implementasi bertahap 10 studi kasus RSI dalam satu aplikasi Next.js.
+
+Status saat ini:
+- Fondasi: autentikasi, peran, database, seed, desain — selesai.
+- Studi kasus 01 (cuti HRD): daftar berbasis periode, detail, riwayat, dan sisa hak cuti — selesai.
+- Studi kasus 02–10 dan dokumentasi pengujian — sprint berikutnya.
+
+Modul 01 tersedia di `/hrd/cuti` dan `/hrd/pegawai` untuk akun `hrd@demo.test`.
 
 1. Pengajuan dan riwayat cuti pegawai (Manajer HRD)
 2. Pencarian, pemesanan, dan pembatalan tiket pesawat

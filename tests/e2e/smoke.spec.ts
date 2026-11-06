@@ -24,6 +24,33 @@ test.describe("fondasi aplikasi", () => {
     await expect(page.getByText("Akses ditolak")).toBeVisible();
   });
 
+  test("database E2E berisi seed yang benar", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByRole("button", { name: /Manajer HRD/ }).click();
+    await expect(page).toHaveURL(/\/hrd\/cuti/);
+    await page.goto("/hrd/pegawai");
+    await expect(page.getByTestId("employee-row")).toHaveCount(8);
+  });
+
+  test("semua peran non-HRD ditolak dari modul HRD", async ({ browser }) => {
+    const roles = [
+      { name: /Calon Penumpang/, home: /\/penerbangan/ },
+      { name: /Member \(profil lengkap\)/, home: /\/member\/penerbangan/ },
+      { name: /Manajer Travel/, home: /\/travel\/pemesanan/ },
+      { name: /^Pengunjung pengunjung@demo/, home: /\/tiket-saya/ },
+    ];
+    for (const role of roles) {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await page.goto("/login");
+      await page.getByRole("button", { name: role.name }).click();
+      await expect(page).toHaveURL(role.home);
+      await page.goto("/hrd/cuti");
+      await expect(page).toHaveURL(/\/unauthorized/);
+      await context.close();
+    }
+  });
+
   test("pengunjung hanya melihat menu tiket saya", async ({ page }) => {
     await page.goto("/login");
     await page.getByRole("button", { name: /^Pengunjung pengunjung@demo/ }).click();

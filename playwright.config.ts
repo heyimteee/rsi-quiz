@@ -10,7 +10,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:3200",
+    baseURL: "http://127.0.0.1:3210",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "off",
@@ -19,9 +19,9 @@ export default defineConfig({
   },
   globalSetup: "./tests/e2e/global-setup.ts",
   webServer: {
-    command: "npm run dev -- -p 3200",
-    url: "http://127.0.0.1:3200/login",
-    reuseExistingServer: true,
+    command: "npm run dev -- -p 3210",
+    url: "http://127.0.0.1:3210/login",
+    reuseExistingServer: false,
     timeout: 120_000,
     env: {
       DATABASE_URL: "file:./e2e.db",
