@@ -12,7 +12,7 @@ independen, cyclomatic complexity, dan pemetaan ke unit test. Fokus utama:
 | Perintah | `npm run test:coverage` |
 | Cakupan | `src/lib/domain`, `src/lib/services`, 3 file action, `src/lib/validation` |
 | Bukan cakupan | Halaman RSC/JSX, hooks, `auth/session.ts`, `app/login/actions.ts`, `utils.ts` |
-| Commit | `b167543` + commit dokumentasi |
+| Commit | commit final Sprint 8 (`git log -1 --oneline`) |
 
 **Penting:** angka coverage adalah cakupan modul inti, bukan cakupan seluruh aplikasi.
 Halaman diverifikasi melalui E2E. Batas ini dicantumkan agar tidak menimbulkan klaim berlebih.
@@ -192,6 +192,9 @@ flowchart TD
 
 Predicate: A, B, C, D, G, loop H = 6. **V(G) = 7.**
 
+Catatan: edge balik loop `H → H` tidak digambarkan agar diagram ringkas; `H` diperlakukan
+sebagai predicate loop (increment kursi untuk setiap segmen).
+
 ### 4.3 Basis path
 
 | Path | Kondisi | Test |
@@ -238,24 +241,29 @@ flowchart TD
   S([Mulai]) --> A{Profile null?}
   A -- Ya --> B[Return 4 field missing] --> Z([Selesai])
   A -- Tidak --> C[Inisialisasi missing]
-  C --> D{Loop field}
-  D --> E{isProfileFieldValid?}
+  C --> D{Ada field berikutnya?}
+  D -- Tidak --> H[Return hasil] --> Z
+  D -- Ya --> E{isProfileFieldValid?}
   E -- Tidak --> F[Tambah field ke missing]
-  E -- Ya --> G{Masih ada field?}
+  E -- Ya --> G{Field terakhir?}
   F --> G
-  G -- Ya --> D
-  G -- Tidak --> H[Return hasil] --> Z
+  G -- Belum --> D
+  G -- Ya --> H
 ```
 
-Predicate: A (profile null), D (loop), E (valid?), G (loop lanjut) = **4**.
-**V(G) = 4 + 1 = 5.**
+Predicate: A (profile null), D (loop masuk), E (valid?), G (loop lanjut) = **4**.
+**V(G) = E − N + 2 = 13 − 10 + 2 = 5.**
+
+Catatan: tabel di bawah adalah **path uji representatif** untuk cabang utama, bukan klaim
+bahwa setiap varian iterasi loop adalah basis path independen. Loop memiliki empat field
+tetap; variasi urutan field tidak mengubah logika.
 
 Helper `isProfileFieldValid` memiliki cabang tipe field (birthDate/NIK/phone/nama) dan
 aturan format masing-masing. Cabang helper diuji dengan 9 partisi pada
 `tests/unit/profile.test.ts` (nama kosong, NIK valid/salah/alfanumerik, telepon
 valid/pendek, tanggal Date valid, tanggal kalender tidak valid).
 
-### 5.3 Basis path fungsi utama
+### 5.3 Path uji representatif
 
 | Path | Kondisi | Test |
 |---|---|---|
@@ -264,6 +272,10 @@ valid/pendek, tanggal Date valid, tanggal kalender tidak valid).
 | P3 | hanya NIK salah format | `mendeteksi NIK dengan format salah` |
 | P4 | NIK + tanggal lahir kosong | `mendeteksi NIK dan tanggal lahir yang kosong` |
 | P5 | hanya nama kosong | `mendeteksi nama kosong saat field lain valid` |
+
+P1–P5 dijalankan oleh `tests/unit/profile.test.ts`. P3 dan P5 sama-sama melewati cabang
+“invalid” tetapi berbeda field/iterasi; keduanya dipertahankan sebagai bukti partisi input,
+bukan sebagai basis path independen tambahan.
 
 Kelima path di atas dijalankan oleh `tests/unit/profile.test.ts`. `validateTicket` diuji
 terpisah sebagai konsumen fungsi ini (valid, reject, tiket tidak ada); bukan bagian dari

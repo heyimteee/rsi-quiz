@@ -8,7 +8,7 @@
 | Mata kuliah | Rekayasa Sistem Informasi (RSI) |
 | Penulis | Tristant AI Harrish Basori (245150407141002) |
 | Tanggal eksekusi | 6–10 November 2026 (eksekusi akhir 10 November 2026) |
-| Commit acuan | `b167543` (kode) + commit dokumentasi |
+| Commit acuan | commit final Sprint 8 (`git log -1 --oneline`) |
 | Lingkungan | macOS, Node.js 26.12.1, npm 11.21.1 |
 
 ## 2. Tujuan

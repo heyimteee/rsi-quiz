@@ -67,7 +67,7 @@ blackbox, test otomatis, dan bukti. Semua item berstatus **Terpenuhi** kecuali y
 | `tests/unit/profile.test.ts` | Completeness/validation gate | 17 |
 | `tests/unit/flight.test.ts` | Filter/sort/time/cheapest | 10 |
 | `tests/unit/leave-service.test.ts` | Overview/detail/history/quota | 7 |
-| `tests/unit/booking-service.test.ts` | Booking/cancel/getter guards | 30 |
+| `tests/unit/booking-service.test.ts` | Booking/cancel/getter guards | 31 |
 | `tests/unit/flight-service.test.ts` | Search relation/date/time | 8 |
 | `tests/unit/member-service.test.ts` | Ticket validation/race/cancel | 9 |
 | `tests/unit/itinerary-service.test.ts` | Itinerary rules/continuity | 15 |

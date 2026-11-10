@@ -78,7 +78,7 @@ preferensi. **Terpenuhi.**
 |---|---|---|---|---|
 | BB-04-01 | Buat rencana 2 rute | Rencana tersimpan, redirect detail, 2 segmen | 2 segmen tampil | `[A]` |
 | BB-04-02 | Tambah rute lanjutan | Segmen ke-3 ditambahkan, tanggal berurutan | 3 segmen, alert sukses | `[A]` |
-| BB-04-03 | Cari dari rencana tersimpan | Hasil per segmen + total termurah | 2 hasil segmen, total Rp2.055.000 | `[A]` |
+| BB-04-03 | Cari dari rencana tersimpan | Hasil per segmen + total termurah | 2 hasil segmen, total termurah tampil | `[A]` |
 | BB-04-04 | Cari manual 2 segmen | Dua blok hasil, masing-masing punya jadwal/harga | 2 segmen tampil | `[A]` |
 | BB-04-05 | Buat 5 rute | Ditolak “maksimal 4 rute” | Ditolak sebelum service | `[U]` |
 | BB-04-06 | Rute tidak tersambung (CGK→DPS lalu SUB→CGK) | Ditolak karena kota asal ≠ tujuan sebelumnya | `INVALID_CONTINUITY` | `[U]` |
@@ -270,7 +270,7 @@ IDOR yang diuji:
 | D-06 | Rencana perjalanan > 4 rute / tidak tersambung | P2 | Selesai | Validasi service + action |
 | D-07 | Tabel travel tidak nyaman di 390px | P2 | Selesai | Kartu seluler |
 | D-08 | Pesan seed tidak persis | P2 | Selesai | Gunakan `Data profil tidak lengkap` |
-| D-09 | Test tanggal tetap akan kedaluwarsa | P2 | Selesai | Tanggal dinamis di test itinerary |
+| D-09 | Test tanggal tetap akan kedaluwarsa | P2 | Selesai | Kasus sensitif tanggal memakai tanggal dinamis; fixture max-route tetap aman karena short-circuit |
 | D-10 | Matriks otorisasi belum lengkap | P1 | Selesai | 18 rute statis + 4 IDOR |
 
 Tidak ada defect P0/P1 yang terbuka pada akhir Sprint 8.

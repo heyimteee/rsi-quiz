@@ -1,7 +1,7 @@
 # 06 — Hasil Pengujian
 
 **Tanggal eksekusi:** 6–10 November 2026 (eksekusi akhir 10 November 2026)  
-**Commit kode:** `b167543` + commit dokumentasi Sprint 7/8  
+**Commit kode:** commit final Sprint 8 (`git log -1 --oneline`)  
 **Lingkungan:** macOS, Node.js 26.12.1, Chromium 158, SQLite
 
 ## 1. Ringkasan eksekusi
@@ -89,7 +89,7 @@ Contoh assertion penting:
 | D-06 | Rute >4 / tidak tersambung | P2 | Validasi service + action |
 | D-07 | Mobile travel table | P2 | Kartu seluler |
 | D-08 | Seed message tidak persis | P2 | Pesan persis |
-| D-09 | Test tanggal tetap | P2 | Tanggal dinamis |
+| D-09 | Test tanggal tetap | P2 | Kasus sensitif tanggal memakai tanggal dinamis |
 | D-10 | Authz matrix belum lengkap | P1 | 18 rute + 4 IDOR |
 
 **Tidak ada defect P0/P1 terbuka.**
