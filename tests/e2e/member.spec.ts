@@ -57,6 +57,7 @@ test.describe("studi kasus 06 - preferensi dan pemesanan member", () => {
     const rows = page.getByTestId("member-flight-row");
     expect(await rows.count()).toBeGreaterThanOrEqual(2);
     await expect(page.getByText("Termurah").first()).toBeVisible();
+    await expect(page.getByText(/\+Rp/).first()).toBeVisible();
 
     await page.getByLabel("Tanggal berangkat").fill(dateString(2));
     await page.getByRole("button", { name: "Cari penerbangan" }).click();

@@ -1,7 +1,10 @@
 # Skenario Tugas Usability (Simulasi)
 
 Setiap responden simulasi menyelesaikan enam tugas berikut menggunakan akun demo yang
-disediakan. Waktu maksimum adalah batas untuk menyatakan tugas gagal.
+disediakan. Karena aplikasi memiliki banyak peran, responden melakukan **role-play**:
+berpindah akun demo sesuai peran yang dibutuhkan tugas. Peran pada tabel profil responden
+adalah peran utama, bukan satu-satunya peran yang dicoba. Waktu maksimum adalah batas untuk
+menyatakan tugas gagal.
 
 | ID | Peran | Tugas | Kriteria berhasil | Batas waktu |
 |---|---|---|---|---:|

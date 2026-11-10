@@ -21,23 +21,28 @@ Halaman diverifikasi melalui E2E. Batas ini dicantumkan agar tidak menimbulkan k
 
 | Metrik | Hasil | Ambang |
 |---|---:|---:|
-| Statements | 91,44% (577/631) | 85% |
-| Branches | 83,48% (364/436) | 80% |
-| Functions | 97,60% (122/125) | 90% |
-| Lines | 93,38% (508/544) | 85% |
+| Statements | 92,35% (592/641) | 85% |
+| Branches | 83,97% (372/443) | 80% |
+| Functions | 99,21% (126/127) | 90% |
+| Lines | 94,19% (519/551) | 85% |
 
 | Modul | Statements | Branches | Lines |
 |---|---:|---:|---:|
 | Domain `booking.ts` | 88,57% | 85,29% | 89,28% |
-| Domain `flight.ts` | 87,71% | 90,90% | 89,13% |
+| Domain `flight.ts` | 98,24% | 98,18% | 97,82% |
 | Domain `leave.ts` | 91,78% | 87,50% | 98,18% |
+| Domain `profile.ts` | 97,43% | 93,54% | 100% |
 | Service `booking-service.ts` | 97,39% | 91,04% | 98,03% |
-| Service `flight-service.ts` | 92,85% | 90,90% | 100% |
+| Service `flight-service.ts` | 92,85% | 81,81% | 100% |
 | Service `itinerary-service.ts` | 95,45% | 87,50% | 95% |
 | Service `leave-service.ts` | 97,61% | 70,00% | 97,22% |
-| Service `member-service.ts` | 96,29% | 94,11% | 96,15% |
+| Service `member-service.ts` | 100% | 100% | 100% |
+| Service `travel-service.ts` | 100% | 100% | 100% |
 | Actions | 82,95% | 67,22% | 85,52% |
 | Validation `booking.ts` | 100% | 75,00% | 100% |
+
+> Angka diambil dari `coverage/coverage-summary.json` setelah penambahan test terakhir.
+> Baris yang tidak tampil pada reporter teks tetap tersedia di JSON.
 
 ---
 
@@ -204,7 +209,9 @@ Predicate: A, B, C, D, G, loop H = 6. **V(G) = 7.**
 ## 5. Fungsi utama 3 — `checkProfileCompleteness`
 
 **Lokasi:** `src/lib/domain/profile.ts`  
-**Peran:** gerbang validasi tiket dan booking; memeriksa empat field wajib beserta formatnya.
+**Peran:** gerbang validasi tiket dan booking; memeriksa empat field wajib. Validasi
+per-field didelegasikan ke helper `isProfileFieldValid` agar flowgraph fungsi utama tetap
+sederhana dan dapat dipetakan ke test.
 
 ### 5.1 Pseudocode
 
@@ -213,15 +220,18 @@ function checkProfileCompleteness(profile):
   if profile null: return all fields missing
   missing = []
   untuk field in [fullName, nik, phone, birthDate]:
-    if field == birthDate: valid = tanggal valid
-    else if field == nik: valid = 16 digit
-    else if field == phone: valid = 9..15 digit
-    else: valid = string tidak kosong
-    if not valid: tambahkan field ke missing
+    if not isProfileFieldValid(field.key, profile[field.key]):
+      tambahkan field ke missing
   return { complete: missing kosong, missingFields, missingLabels }
+
+function isProfileFieldValid(key, value):
+  jika key birthDate: valid bila Date valid / string YYYY-MM-DD valid secara kalender
+  jika key nik: valid bila 16 digit
+  jika key phone: valid bila 9..15 digit
+  selain itu: valid bila string tidak kosong
 ```
 
-### 5.2 Flowgraph
+### 5.2 Flowgraph fungsi utama
 
 ```mermaid
 flowchart TD
@@ -229,44 +239,41 @@ flowchart TD
   A -- Ya --> B[Return 4 field missing] --> Z([Selesai])
   A -- Tidak --> C[Inisialisasi missing]
   C --> D{Loop field}
-  D --> E{Field birthDate?}
-  E -- Ya --> F{Tanggal valid?}
-  E -- Tidak --> G{Field NIK?}
-  G -- Ya --> H{NIK 16 digit?}
-  G -- Tidak --> I{Field phone?}
-  I -- Ya --> J{Telepon 9-15 digit?}
-  I -- Tidak --> K{String tidak kosong?}
-  F --> L{Valid?}
-  H --> L
-  J --> L
-  K --> L
-  L -- Tidak --> M[Tambah missing] --> N{Masih ada field?}
-  L -- Ya --> N
-  N -- Ya --> D
-  N -- Tidak --> O[Return hasil] --> Z
+  D --> E{isProfileFieldValid?}
+  E -- Tidak --> F[Tambah field ke missing]
+  E -- Ya --> G{Masih ada field?}
+  F --> G
+  G -- Ya --> D
+  G -- Tidak --> H[Return hasil] --> Z
 ```
 
-Predicate: A, E, G, I, F/H/J/K (valid branches), L, N = **7**.
-**V(G) = 8.**
+Predicate: A (profile null), D (loop), E (valid?), G (loop lanjut) = **4**.
+**V(G) = 4 + 1 = 5.**
 
-### 5.3 Basis path
+Helper `isProfileFieldValid` memiliki cabang tipe field (birthDate/NIK/phone/nama) dan
+aturan format masing-masing. Cabang helper diuji dengan 9 partisi pada
+`tests/unit/profile.test.ts` (nama kosong, NIK valid/salah/alfanumerik, telepon
+valid/pendek, tanggal Date valid, tanggal kalender tidak valid).
 
-| Path | Partisi | Test |
+### 5.3 Basis path fungsi utama
+
+| Path | Kondisi | Test |
 |---|---|---|
 | P1 | profile null | `menangani profil null` |
-| P2 | semua valid | `menyatakan profil lengkap` |
-| P3 | NIK kosong | `mendeteksi NIK dan tanggal lahir yang kosong` |
-| P4 | NIK format salah (3 digit) | `mendeteksi NIK dengan format salah` |
-| P5 | telepon terlalu pendek | `identitySchema` / completeness |
-| P6 | tanggal lahir invalid | `checkProfileCompleteness` |
-| P7 | hanya nama kosong | `validateTicket` rejected |
-| P8 | tiket tidak ada | `menolak jika tiket tidak ditemukan` |
+| P2 | semua field valid | `menyatakan profil lengkap` |
+| P3 | hanya NIK salah format | `mendeteksi NIK dengan format salah` |
+| P4 | NIK + tanggal lahir kosong | `mendeteksi NIK dan tanggal lahir yang kosong` |
+| P5 | hanya nama kosong | `mendeteksi nama kosong saat field lain valid` |
+
+Kelima path di atas dijalankan oleh `tests/unit/profile.test.ts`. `validateTicket` diuji
+terpisah sebagai konsumen fungsi ini (valid, reject, tiket tidak ada); bukan bagian dari
+flowgraph `checkProfileCompleteness`.
 
 ---
 
 ## 6. Fungsi pendukung
 
-| Fungsi | Lokasi | V(G) | Fokus path | Test |
+| Fungsi | Lokasi | V(G) perkiraan* | Fokus path | Test |
 |---|---|---:|---|---|
 | `validateMemberTicket` | member-service | 7 | tidak ada booking, tanpa tiket, cancelled, sudah valid, lengkap, reject, race | `member-service.test.ts` |
 | `leavePeriodRange` | domain/leave | 6 | bulan invalid, hari invalid, Feb 31, rentang bulan | `leave.test.ts` |
@@ -276,6 +283,9 @@ Predicate: A, E, G, I, F/H/J/K (valid branches), L, N = **7**.
 | `filterFlights` / `sortFlights` | domain/flight | 6 | rute, tanggal, harga, durasi, kosong | `flight.test.ts` |
 | `createItinerary` | itinerary-service | 10 | nama, 0/5 segmen, sama, continuity, tanggal | `itinerary-service.test.ts` |
 | `addItinerarySegment` | itinerary-service | 7 | not found, owner, max, continuity, date | `itinerary-service.test.ts` |
+
+\* Nilai pada fungsi pendukung adalah perkiraan dari jumlah cabang utama; flowgraph penuh
+hanya disusun untuk tiga fungsi utama. Nilai ini tidak digunakan sebagai klaim coverage.
 
 ---
 

@@ -9,10 +9,10 @@ tabel transisi status, verifikasi pesan error, dan defect log.
 |---|---|
 | `[A]` | Otomatis E2E Playwright |
 | `[U]` | Otomatis unit/integration Vitest |
-| `[M]` | Verifikasi manual melalui browser + screenshot |
+| `[M]` | Verifikasi manual melalui browser; bukti di `evidence/manual-verification.md` |
 | `[D]` | Diuji pada level domain/service (unit) |
 
-Semua kasus di bawah berstatus **Lulus** pada eksekusi 6 November 2026, kecuali yang
+Semua kasus di bawah berstatus **Lulus** pada eksekusi 6–10 November 2026, kecuali yang
 dinyatakan sebagai batasan yang diketahui.
 
 ---
@@ -29,7 +29,7 @@ dinyatakan sebagai batasan yang diketahui.
 | BB-01-06 | Riwayat pegawai dengan cuti lintas tahun | Durasi total 7 hari, pembagian 4 hari tahun berjalan + 3 hari tahun berikutnya | “2026: 4 hari · 2027: 3 hari” | `[A]` |
 | BB-01-07 | URL `?bulan=2&tahun=2026&tanggal=31` | Peringatan tanggal tidak valid; filter jatuh ke seluruh bulan | Peringatan tampil, tidak error | `[M]` |
 | BB-01-08 | Pengajuan 30 Jan–3 Feb dilihat pada Februari | Pengajuan muncul karena rentang beririsan | Lulus (domain overlap) | `[D]` |
-| BB-01-09 | URL `?tanggal=abc`, bulan 13, tahun 1800 | Nilai tidak valid ditolak/di-fallback tanpa crash | Lulus (validasi periode) | `[D]` |
+| BB-01-09 | URL bulan 13 / `tanggal=31` pada Februari | Nilai tidak valid ditolak/di-fallback tanpa crash | Lulus (validasi periode) | `[D]` |
 
 **Acceptance criteria:** a) memilih periode semua pegawai; b) melihat pengajuan masing-masing;
 c) melihat riwayat masing-masing. **Terpenuhi.**
@@ -64,7 +64,7 @@ preferensi. **Terpenuhi.**
 | BB-03-02 | Tujuan 1 = tujuan 2 | Ditolak dengan pesan dua tujuan harus berbeda | Pesan tampil, grid tidak dirender | `[A]` |
 | BB-03-03 | Asal = salah satu tujuan | Ditolak | Lulus | `[U]` |
 | BB-03-04 | Salah satu tujuan tanpa penerbangan | Kolom kosong dengan empty state, kolom lain tetap tampil | Lulus | `[M]` |
-| BB-03-05 | Harga termurah sama di kedua tujuan | Tidak menampilkan klaim “lebih murah” yang salah | Banner hanya muncul bila selisih > 0 | `[U]` |
+| BB-03-05 | Harga termurah sama di kedua tujuan | Tidak menampilkan klaim “lebih murah” yang salah | Banner hanya muncul bila selisih > 0 (inspeksi kode) | `[M]` |
 | BB-03-06 | Kursi habis pada salah satu hasil | Tidak dianggap termurah; CTA tidak aktif | Lulus (sold-out difilter) | `[U]` |
 
 **Acceptance criteria:** a) cari beberapa tujuan; b) lihat jadwal, maskapai, harga.
@@ -113,10 +113,10 @@ keberangkatan, dan tujuan. **Terpenuhi.**
 
 | ID | Input / Langkah | Hasil yang Diharapkan | Hasil Aktual | Metode |
 |---|---|---|---|---|
-| BB-06-01 | Cari CGK→DPS tanggal besok | Daftar penerbangan + ringkasan harga | 3 baris | `[A]` |
-| BB-06-02 | Filter jam 12:00–13:00 | Hanya penerbangan 12:15 | 1 hasil | `[U]` |
+| BB-06-01 | Cari CGK→DPS tanggal besok | Daftar penerbangan + ringkasan harga | Daftar tampil (3 baris pada screenshot) | `[M]` |
+| BB-06-02 | Filter jam 12:00–23:59 | Hanya penerbangan sore/malam | 1 hasil (18:40) pada data unit | `[U]` |
 | BB-06-03 | Urutkan harga terendah/tertinggi/durasi | Urutan berubah sesuai kriteria | Lulus | `[U]` |
-| BB-06-04 | Baca tabel perbandingan | Termurah ditandai; selisih benar | Rp1.330.000; +25.000; +35.000 | `[A]` |
+| BB-06-04 | Baca tabel perbandingan | Termurah ditandai; selisih tampil | “Termurah” dan delta `+Rp…` tampil | `[A]` |
 | BB-06-05 | Pesan dari tabel | Masuk detail, booking sukses | Booking `CONFIRMED` | `[A]` |
 | BB-06-06 | Tanggal tanpa jadwal | Empty state | Lulus | `[M]` |
 | BB-06-07 | Kursi habis | Harga dicoret, CTA tidak aktif | Lulus | `[M]` |
@@ -170,7 +170,7 @@ tiket; d) email e-tiket diterima. **Terpenuhi** (email disimulasikan).
 | BB-09-01 | Input `TRV-SALAH` | Pesan persis `Kode booking reference tidak sesuai` | Pesan tampil | `[A]` |
 | BB-09-02 | Input hanya spasi | Pesan tidak sesuai | Pesan tampil | `[A]` |
 | BB-09-03 | Input ` trv-demo01 ` | Normalisasi, kode ditemukan | Status tampil | `[A]` |
-| BB-09-04 | Kode valid `TRV-DEMO01` | Status Confirmed, rute, jadwal, total | Semua tampil | `[A]` |
+| BB-09-04 | Kode valid `TRV-DEMO01` | Status Confirmed, rute, total | Status, rute CGK–DPS, dan total tampil | `[A]` |
 | BB-09-05 | Kode pemesanan batal (`TRV-DEMO04`) | Status Cancelled dengan banner netral | Lulus | `[M]` |
 | BB-09-06 | Ganti dari kode salah ke kode benar | Error hilang, hasil muncul | Lulus | `[A]` |
 | BB-09-07 | Non-travel membuka halaman | Ditolak | `/unauthorized` | `[A]` |
@@ -186,7 +186,7 @@ tiket; d) email e-tiket diterima. **Terpenuhi** (email disimulasikan).
 | BB-10-01 | Isi asal, tujuan, tanggal berangkat/pulang | Daftar keberangkatan dan kepulangan | 3 + 3 opsi | `[A]` |
 | BB-10-02 | Tanggal pulang < berangkat | Pesan persis tanggal kepulangan tidak boleh lebih awal | Pesan tampil | `[A]` |
 | BB-10-03 | Rute tanpa penerbangan | `Penerbangan tidak tersedia untuk kriteria yang dipilih` | Pesan tampil | `[A]` |
-| BB-10-04 | Pilih satu keberangkatan + satu kepulangan | Total = jumlah harga, tombol lanjut aktif | Total benar | `[A]` |
+| BB-10-04 | Pilih satu keberangkatan + satu kepulangan | Total tampil, tombol lanjut aktif | Total `Rp…` tampil; kesetaraan harga diuji unit | `[A]` |
 | BB-10-05 | Isi identitas → konfirmasi | Booking 2 segmen, referensi tampil | 2 segmen | `[A]` |
 | BB-10-06 | Tanggal pulang sama dengan berangkat | Diizinkan | Lulus | `[U]` |
 | BB-10-07 | Rute kepulangan tidak terbalik | Ditolak | `INVALID_ROUTE` | `[U]` |
@@ -198,16 +198,27 @@ tiket; d) email e-tiket diterima. **Terpenuhi** (email disimulasikan).
 
 ## 11. Matriks Otorisasi
 
-Ringkasan hasil `tests/e2e/authz.spec.ts` (5 peran × 15 rute statis) dan `idor.spec.ts`:
+Ringkasan hasil `tests/e2e/authz.spec.ts` (**5 peran × 18 rute statis**) dan `idor.spec.ts`:
 
 | Rute | HRD | Penumpang | Member | Travel | Pengunjung |
 |---|:---:|:---:|:---:|:---:|:---:|
-| `/hrd/cuti`, `/hrd/pegawai` | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `/member/profil`, `/member/validasi`, `/member/rencana` | ❌ | ❌ | ✅ | ❌ | ❌ |
-| `/travel/pemesanan`, `/travel/cari`, `/dev/email` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `/hrd/cuti` | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `/hrd/pegawai` | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `/member/profil` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/member/validasi` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/member/penerbangan` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/member/rencana` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/member/rencana/baru` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/member/pencarian-multi` | ❌ | ❌ | ✅ | ❌ | ❌ |
+| `/travel/pemesanan` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `/travel/cari` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `/travel/verifikasi` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `/dev/email` | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `/tiket-saya` | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `/penerbangan`, `/penerbangan/bandingkan` | ❌ | ✅ | ✅ | ❌ | ❌ |
+| `/penerbangan` | ❌ | ✅ | ✅ | ❌ | ❌ |
+| `/penerbangan/bandingkan` | ❌ | ✅ | ✅ | ❌ | ❌ |
 | `/pulang-pergi` | ❌ | ✅ | ✅ | ❌ | ❌ |
+| `/pulang-pergi/penumpang` | ❌ | ✅ | ✅ | ❌ | ❌ |
 | `/pemesanan` | ❌ | ✅ | ✅ | ❌ | ✅ |
 
 IDOR yang diuji:
@@ -260,7 +271,7 @@ IDOR yang diuji:
 | D-07 | Tabel travel tidak nyaman di 390px | P2 | Selesai | Kartu seluler |
 | D-08 | Pesan seed tidak persis | P2 | Selesai | Gunakan `Data profil tidak lengkap` |
 | D-09 | Test tanggal tetap akan kedaluwarsa | P2 | Selesai | Tanggal dinamis di test itinerary |
-| D-10 | Matriks otorisasi belum lengkap | P1 | Selesai | 15 rute statis + IDOR |
+| D-10 | Matriks otorisasi belum lengkap | P1 | Selesai | 18 rute statis + 4 IDOR |
 
 Tidak ada defect P0/P1 yang terbuka pada akhir Sprint 8.
 

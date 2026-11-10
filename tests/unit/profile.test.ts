@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { checkProfileCompleteness, validateTicket } from "@/lib/domain/profile";
+import {
+  checkProfileCompleteness,
+  isProfileFieldValid,
+  validateTicket,
+} from "@/lib/domain/profile";
 import { MESSAGES } from "@/lib/constants";
 
 const completeProfile = {
@@ -38,6 +42,28 @@ describe("checkProfileCompleteness", () => {
 
   it("menangani profil null", () => {
     expect(checkProfileCompleteness(null).missingFields).toHaveLength(4);
+  });
+
+  it("mendeteksi nama kosong saat field lain valid", () => {
+    const result = checkProfileCompleteness({ ...completeProfile, fullName: "   " });
+    expect(result.complete).toBe(false);
+    expect(result.missingFields).toEqual(["fullName"]);
+  });
+});
+
+describe("isProfileFieldValid", () => {
+  it.each([
+    ["fullName", "Dimas Nugroho", true],
+    ["fullName", "   ", false],
+    ["nik", "3171031103900003", true],
+    ["nik", "123", false],
+    ["nik", "317103110390000X", false],
+    ["phone", "081311112222", true],
+    ["phone", "123", false],
+    ["birthDate", new Date(1990, 2, 11), true],
+    ["birthDate", "2026-02-31", false],
+  ] as const)("memvalidasi %s dengan nilai %s", (key, value, expected) => {
+    expect(isProfileFieldValid(key, value as never)).toBe(expected);
   });
 });
 

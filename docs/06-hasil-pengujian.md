@@ -1,7 +1,7 @@
 # 06 — Hasil Pengujian
 
-**Tanggal eksekusi:** 6 November 2026  
-**Commit kode:** `b167543` (ditambah commit dokumentasi)  
+**Tanggal eksekusi:** 6–10 November 2026 (eksekusi akhir 10 November 2026)  
+**Commit kode:** `b167543` + commit dokumentasi Sprint 7/8  
 **Lingkungan:** macOS, Node.js 26.12.1, Chromium 158, SQLite
 
 ## 1. Ringkasan eksekusi
@@ -10,7 +10,7 @@
 |---|---|---|
 | Lint | `npm run lint` | ✅ Lulus, tanpa error |
 | Typecheck | `npm run typecheck` | ✅ Lulus |
-| Unit + coverage | `npm run test:coverage` | ✅ 153 test / 14 file lulus |
+| Unit + coverage | `npm run test:coverage` | ✅ 165 test / 14 file lulus |
 | E2E | `npm run test:e2e` | ✅ 48 test lulus (42,6 detik) |
 | Build | `npm run build` | ✅ Lulus (Next.js 16.4.5) |
 | Verifikasi penuh | `npm run verify:full` | ✅ Lulus |
@@ -19,10 +19,10 @@
 
 | Metrik | Hasil | Ambang | Status |
 |---|---:|---:|---|
-| Statements | 91,44% (577/631) | 85% | ✅ |
-| Branches | 83,48% (364/436) | 80% | ✅ |
-| Functions | 97,60% (122/125) | 90% | ✅ |
-| Lines | 93,38% (508/544) | 85% | ✅ |
+| Statements | 92,35% (592/641) | 85% | ✅ |
+| Branches | 83,97% (372/443) | 80% | ✅ |
+| Functions | 99,21% (126/127) | 90% | ✅ |
+| Lines | 94,19% (519/551) | 85% | ✅ |
 
 **Cakupan:** `src/lib/domain`, `src/lib/services`, tiga file action (`booking`, `member`,
 `travel`), dan `src/lib/validation`. Halaman RSC dan sesi JWT tidak termasuk; lihat
@@ -45,11 +45,12 @@
 Contoh assertion penting:
 - Kode booking baru berformat `TRV-[A-Z0-9]{6}` dan status `Confirmed`.
 - Pembatalan mengubah status menjadi `Cancelled` dan tombol batal hilang.
-- Total pulang-pergi = jumlah harga kedua segmen; 2 segmen tersimpan.
+- Halaman pulang-pergi menampilkan total dan 2 segmen; kesetaraan total = jumlah harga
+  kedua segmen diuji pada level unit/service.
 - Filter `WAITING_FOR_PAYMENT` hanya menampilkan satu pemesanan seed.
 - Verifikasi `trv-demo01` (spasi + huruf kecil) menemukan `TRV-DEMO01`.
 - NIK penuh tidak ada di HTML halaman pemesanan pengunjung; hanya versi ter-mask.
-- 15 rute statis diuji untuk 5 peran; 4 skenario IDOR menghasilkan 404/unauthorized.
+- 18 rute statis diuji untuk 5 peran; 4 skenario IDOR menghasilkan 404/unauthorized.
 
 ## 4. Hasil usability (simulasi)
 
@@ -89,7 +90,7 @@ Contoh assertion penting:
 | D-07 | Mobile travel table | P2 | Kartu seluler |
 | D-08 | Seed message tidak persis | P2 | Pesan persis |
 | D-09 | Test tanggal tetap | P2 | Tanggal dinamis |
-| D-10 | Authz matrix belum lengkap | P1 | 15 rute + IDOR |
+| D-10 | Authz matrix belum lengkap | P1 | 18 rute + 4 IDOR |
 
 **Tidak ada defect P0/P1 terbuka.**
 
@@ -124,10 +125,12 @@ Folder: [`evidence/screenshots/`](evidence/screenshots/)
 | `21-mobile-hrd.png` | HRD 390px |
 | `22-mobile-travel.png` | Travel 390px |
 
+Verifikasi kasus manual: [`evidence/manual-verification.md`](evidence/manual-verification.md).
+
 ### Log dan artefak
 
 - [`evidence/verify-full.log`](evidence/verify-full.log) — log lengkap
-  `npm run verify:full` (exit 0, 153 unit test, 48 E2E).
+  `npm run verify:full` (exit 0, 165 unit test, 48 E2E).
 - `coverage/coverage-summary.json` dan `coverage/index.html` (dihasilkan ulang oleh perintah).
 - `playwright-report/index.html` dan `test-results/` (trace/screenshot saat gagal).
 - Dokumen ini, `02-blackbox-testing.md`, `03-whitebox-testing.md`,

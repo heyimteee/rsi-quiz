@@ -16,8 +16,8 @@ Status saat ini:
 - Studi kasus 10 (pulang-pergi) — selesai.
 - Dokumentasi pengujian (blackbox, whitebox, usability) — selesai.
 
-Seluruh 10 studi kasus sudah dapat didemokan. Bukti eksekusi terakhir: **153 unit test**,
-**48 E2E test**, coverage inti **91,44% statements / 83,48% branches**, build produksi lulus.
+Seluruh 10 studi kasus sudah dapat didemokan. Bukti eksekusi terakhir: **165 unit test**,
+**48 E2E test**, coverage inti **92,35% statements / 83,97% branches**, build produksi lulus.
 Dokumentasi lengkap ada di [`docs/`](docs/README.md).
 
 Modul 01 tersedia di `/hrd/cuti` untuk `hrd@demo.test`. Modul 02, 03, dan 10 tersedia

@@ -164,7 +164,7 @@ describe("addItinerarySegment", () => {
     await addItinerarySegment("itinerary-1", "member-1", {
       originId: "airport-sub",
       destinationId: "airport-cgk",
-      departureDate: new Date(2026, 10, 15),
+      departureDate: futureDate(12),
     });
 
     expect(segmentCreate).toHaveBeenCalledWith({
@@ -185,7 +185,7 @@ describe("addItinerarySegment", () => {
       addItinerarySegment("itinerary-1", "member-1", {
         originId: "airport-sub",
         destinationId: "airport-cgk",
-        departureDate: new Date(2026, 10, 20),
+        departureDate: futureDate(20),
       }),
     ).rejects.toMatchObject({ code: "MAX_SEGMENTS" });
   });

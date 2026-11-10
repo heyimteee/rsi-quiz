@@ -11,12 +11,12 @@ dokumen pengujian blackbox, whitebox, dan usability.
 
 | Jenis pengujian | Alat | Hasil |
 |---|---|---:|
-| Unit / integration | Vitest 5.1.0 | **153 test lulus** (14 file) |
+| Unit / integration | Vitest 5.1.0 | **165 test lulus** (14 file) |
 | End-to-end | Playwright 1.65 + Chromium | **48 test lulus** |
-| Statement coverage | V8 / Vitest | **91,44%** |
-| Branch coverage | V8 / Vitest | **83,48%** |
-| Function coverage | V8 / Vitest | **97,60%** |
-| Line coverage | V8 / Vitest | **93,38%** |
+| Statement coverage | V8 / Vitest | **92,35%** |
+| Branch coverage | V8 / Vitest | **83,97%** |
+| Function coverage | V8 / Vitest | **99,21%** |
+| Line coverage | V8 / Vitest | **94,19%** |
 | Build produksi | Next.js 16.4.5 | **Lulus** |
 | Lint & typecheck | ESLint + TypeScript | **Lulus** |
 | Usability (simulasi) | SUS + metrik tugas | **SUS 89,06** (simulasi) |

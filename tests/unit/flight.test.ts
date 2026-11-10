@@ -68,12 +68,28 @@ describe("flight search", () => {
     expect(isWithinTimeWindow(new Date(2026, 10, 10, 12, 0), "22:00", "02:00")).toBe(false);
   });
 
-  it("mengurutkan harga terendah", () => {
-    const result = searchFlights(flights, {
+  it("mengurutkan harga terendah dan tertinggi", () => {
+    const ascending = searchFlights(flights, {
       date: new Date(2026, 10, 10),
       sort: "price_asc",
     });
-    expect(result[0].id).toBe("2");
+    const descending = searchFlights(flights, {
+      date: new Date(2026, 10, 10),
+      sort: "price_desc",
+    });
+    expect(ascending[0].id).toBe("2");
+    expect(descending[0].id).toBe("1");
+  });
+
+  it("mengurutkan durasi tercepat", () => {
+    const result = searchFlights(flights, { sort: "duration_asc" });
+    expect(result[0].id).toBe("3");
+  });
+
+  it("mendukung batas waktu satu sisi", () => {
+    expect(isWithinTimeWindow(new Date(2026, 10, 10, 12, 0), "12:00", null)).toBe(true);
+    expect(isWithinTimeWindow(new Date(2026, 10, 10, 12, 0), null, "11:59")).toBe(false);
+    expect(isWithinTimeWindow(new Date(2026, 10, 10, 12, 0), "25:00", null)).toBe(true);
   });
 
   it("membatasi jumlah hasil", () => {

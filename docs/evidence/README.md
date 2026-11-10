@@ -1,8 +1,18 @@
 # Bukti Pengujian
 
-Screenshot di folder ini diambil dari **build produksi** (`npm run build` + `npm run start`)
-dengan database demo yang di-reset dari seed pada 6 November 2026. Build produksi dipakai agar
-overlay developer Next.js tidak ikut terbawa.
+Screenshot di folder ini diambil dari **build produksi** dengan database demo yang di-reset
+dari seed pada 6 November 2026:
+
+```bash
+npm run db:reset
+npm run build
+npm run start -- -p 3100
+# screenshot diambil dari http://127.0.0.1:3100
+```
+
+Build produksi dipakai agar overlay developer Next.js tidak ikut terbawa. E2E otomatis
+berjalan terpisah memakai `next dev` pada port `3210` dan `prisma/e2e.db`; jadi bukti
+screenshot (produksi) dan bukti E2E (dev server + DB terisolasi) adalah dua artefak berbeda.
 
 ## Screenshot
 
@@ -30,6 +40,11 @@ overlay developer Next.js tidak ikut terbawa.
 | `screenshots/20-visitor-tickets.png` | Tiket pengunjung |
 | `screenshots/21-mobile-hrd.png` | HRD pada 390px |
 | `screenshots/22-mobile-travel.png` | Travel pada 390px |
+
+## Verifikasi manual
+
+Kasus blackbox bertanda `[M]` dicatat pada [`manual-verification.md`](manual-verification.md)
+beserta input, hasil, dan bukti screenshot bila tersedia.
 
 ## Log yang dapat dihasilkan ulang
 

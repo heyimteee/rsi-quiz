@@ -116,7 +116,9 @@ export default async function RoundTripPassengerPage({ searchParams }: { searchP
 
           <div className="card flex items-center justify-between p-4">
             <span className="font-semibold">Total pulang-pergi</span>
-            <span className="text-xl font-extrabold text-navy">{formatIDR(total)}</span>
+            <span data-testid="roundtrip-total" className="text-xl font-extrabold text-navy">
+              {formatIDR(total)}
+            </span>
           </div>
 
           <div className="flex items-start gap-2 rounded-xl bg-sky-soft/60 p-3 text-xs leading-relaxed text-navy">

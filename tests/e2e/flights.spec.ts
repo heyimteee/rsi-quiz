@@ -20,7 +20,7 @@ test.describe("studi kasus 02 - pencarian, pemesanan, pembatalan", () => {
     await expect(page).toHaveURL(/tanggal=/);
     const cards = page.getByTestId("flight-card");
     await expect(cards.first()).toBeVisible();
-    expect(await cards.count()).toBeGreaterThanOrEqual(2);
+    await expect(cards).toHaveCount(3);
 
     await page.getByRole("link", { name: /Lihat & pesan/ }).first().click();
     await expect(page).toHaveURL(/\/penerbangan\/.+/);
@@ -65,6 +65,7 @@ test.describe("studi kasus 03 - perbandingan dua tujuan", () => {
     await expect(page.getByRole("heading", { name: "Bandingkan Dua Tujuan" })).toBeVisible();
     await expect(page.getByTestId("compare-column")).toHaveCount(2);
     await expect(page.getByTestId("flight-card").first()).toBeVisible();
+    await expect(page.getByTestId("flight-card")).toHaveCount(6);
     await expect(page.getByRole("heading", { name: /Denpasar \(DPS\)/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Surabaya \(SUB\)/ })).toBeVisible();
     await expect(page.getByText(/lebih murah/).first()).toBeVisible();
@@ -88,9 +89,12 @@ test.describe("studi kasus 10 - pulang-pergi", () => {
     );
     await expect(page.getByTestId("outbound-option").first()).toBeVisible();
     await expect(page.getByTestId("return-option").first()).toBeVisible();
+    await expect(page.getByTestId("outbound-option")).toHaveCount(3);
+    await expect(page.getByTestId("return-option")).toHaveCount(3);
 
     await page.getByTestId("outbound-option").first().click();
     await page.getByTestId("return-option").first().click();
+    await expect(page.getByTestId("roundtrip-total").first()).toContainText("Rp");
     await page.getByRole("button", { name: "Lanjut ke data penumpang" }).click();
     await expect(page).toHaveURL(/\/pulang-pergi\/penumpang/);
     await expect(page.getByTestId("roundtrip-segment")).toHaveCount(2);

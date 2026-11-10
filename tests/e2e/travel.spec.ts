@@ -130,5 +130,8 @@ test.describe("studi kasus 09 - verifikasi kode booking", () => {
     await expect(page.getByTestId("reference-result")).toBeVisible();
     await expect(page.getByText("TRV-DEMO01").first()).toBeVisible();
     await expect(page.getByText("Confirmed").first()).toBeVisible();
+    await expect(page.getByTestId("reference-result").getByText("CGK").first()).toBeVisible();
+    await expect(page.getByTestId("reference-result").getByText("DPS").first()).toBeVisible();
+    await expect(page.getByTestId("reference-result").getByText(/Rp/).first()).toBeVisible();
   });
 });

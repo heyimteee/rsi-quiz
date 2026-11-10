@@ -20,15 +20,16 @@
 | Jenis studi | Task-based usability testing, simulasi |
 | Responden | 8 simulasi (R1–R8) |
 | Tugas | 6 tugas per responden (48 observasi tugas) |
+| Role-play | Responden berpindah akun demo untuk setiap peran; tabel profil adalah peran utama |
 | Teknik | Think-aloud, pengukuran keberhasilan/waktu/error, SEQ, SUS |
 | Perangkat | Desktop 1440×1000 dan seluler 390×844 (Chromium) |
 | Akun | Akun demo per peran |
 | Data | `docs/usability/data-sus-simulasi.csv`, `data-tugas-simulasi.csv` |
 | Skrip hitung | `node scripts/hitung-usability.mjs --write` |
 
-### Profil responden simulasi
+### Profil responden simulasi (peran utama)
 
-| ID | Peran simulasi | Pengalaman |
+| ID | Peran utama simulasi | Pengalaman |
 |---|---|---|
 | R1 | Manajer HRD | Familiar dengan aplikasi HR |
 | R2 | Calon Penumpang | Familiar dengan aplikasi travel |
@@ -68,9 +69,10 @@ Data lengkap: [`usability/hasil-simulasi.md`](usability/hasil-simulasi.md).
 
 Interpretasi:
 - Success rate 93,75% menunjukkan alur utama dapat diselesaikan.
-- T5 (pemesanan pengunjung + verifikasi) memiliki waktu tertinggi (177,5 detik) dan error
-  tertinggi (1,38) — kandidat utama perbaikan navigasi/istilah.
-- T6 memiliki SEQ terendah (5,00), mengindikasikan kebutuhan memperjelas konteks error tanggal.
+- T5 (pemesanan pengunjung + verifikasi) memiliki waktu tertinggi (177,50 detik) — kandidat
+  utama perbaikan navigasi/istilah.
+- T6 memiliki error tertinggi (1,50) dan SEQ terendah (5,00), mengindikasikan kebutuhan
+  memperjelas konteks error tanggal.
 - T4 memiliki satu kegagalan simulasi (87,5%) karena responden bingung membedakan profil
   lengkap vs validasi tiket.
 

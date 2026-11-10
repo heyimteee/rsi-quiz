@@ -64,8 +64,8 @@ blackbox, test otomatis, dan bukti. Semua item berstatus **Terpenuhi** kecuali y
 |---|---|---:|
 | `tests/unit/leave.test.ts` | Domain cuti | 15 |
 | `tests/unit/booking.test.ts` | Domain booking/date/reference | 12 |
-| `tests/unit/profile.test.ts` | Completeness/validation gate | 7 |
-| `tests/unit/flight.test.ts` | Filter/sort/time/cheapest | 8 |
+| `tests/unit/profile.test.ts` | Completeness/validation gate | 17 |
+| `tests/unit/flight.test.ts` | Filter/sort/time/cheapest | 10 |
 | `tests/unit/leave-service.test.ts` | Overview/detail/history/quota | 7 |
 | `tests/unit/booking-service.test.ts` | Booking/cancel/getter guards | 30 |
 | `tests/unit/flight-service.test.ts` | Search relation/date/time | 8 |
@@ -85,8 +85,8 @@ blackbox, test otomatis, dan bukti. Semua item berstatus **Terpenuhi** kecuali y
 | `tests/e2e/smoke.spec.ts` | Auth/fondasi/seed | 7 |
 | `tests/e2e/travel.spec.ts` | Cases 07, 08, 09 | 6 |
 
-> Jumlah unit test pada tabel adalah jumlah blok `it`; satu blok `it.each` berisi dua kasus,
-> sehingga total yang dilaporkan Vitest adalah **153 test**. E2E total **48 test**.
+> Jumlah pada tabel adalah jumlah test efektif; baris `it.each` dihitung per kasus.
+> Total yang dilaporkan Vitest adalah **165 test**. E2E total **48 test**.
 
 ## 4. Keterlacakan ke diagram konseptual
 

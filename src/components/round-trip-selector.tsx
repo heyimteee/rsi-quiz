@@ -166,7 +166,9 @@ export function RoundTripSelector({
       <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Total pulang-pergi</p>
-          <p className="text-xl font-extrabold text-navy">{formatIDR(total)}</p>
+          <p data-testid="roundtrip-total" className="text-xl font-extrabold text-navy">
+            {formatIDR(total)}
+          </p>
           <p className="text-[11px] text-muted">
             {outbound && inbound
               ? `${outbound.origin.code} → ${outbound.destination.code} · ${inbound.origin.code} → ${inbound.destination.code}`

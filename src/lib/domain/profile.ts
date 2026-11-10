@@ -25,6 +25,39 @@ function isFilled(value: string | null | undefined): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function isValidBirthDate(value: string | Date | null | undefined): boolean {
+  if (value instanceof Date) return !Number.isNaN(value.getTime());
+  if (typeof value !== "string") return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+}
+
+export function isProfileFieldValid(
+  key: (typeof REQUIRED_PROFILE_FIELDS)[number]["key"],
+  value: string | Date | null | undefined,
+): boolean {
+  if (key === "birthDate") {
+    return isValidBirthDate(value);
+  }
+  if (key === "nik") {
+    return isFilled(value as string) && /^\d{16}$/.test((value as string).trim());
+  }
+  if (key === "phone") {
+    const digits = String(value ?? "").replace(/\D/g, "");
+    return digits.length >= 9 && digits.length <= 15;
+  }
+  return isFilled(value as string);
+}
+
 export function checkProfileCompleteness(profile: ProfileLike | null | undefined): ProfileCompleteness {
   if (!profile) {
     return {
@@ -38,19 +71,7 @@ export function checkProfileCompleteness(profile: ProfileLike | null | undefined
   const missingLabels: string[] = [];
 
   for (const field of REQUIRED_PROFILE_FIELDS) {
-    const value = profile[field.key];
-    let valid = false;
-    if (field.key === "birthDate") {
-      valid = Boolean(value) && !Number.isNaN(new Date(value as string).getTime());
-    } else if (field.key === "nik") {
-      valid = isFilled(value as string) && /^\d{16}$/.test((value as string).trim());
-    } else if (field.key === "phone") {
-      const digits = String(value ?? "").replace(/\D/g, "");
-      valid = digits.length >= 9 && digits.length <= 15;
-    } else {
-      valid = isFilled(value as string);
-    }
-    if (!valid) {
+    if (!isProfileFieldValid(field.key, profile[field.key])) {
       missingFields.push(field.key);
       missingLabels.push(field.label);
     }
