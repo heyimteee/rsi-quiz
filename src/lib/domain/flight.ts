@@ -108,8 +108,9 @@ export function searchFlights(flights: FlightLike[], criteria: FlightSearchCrite
 export function getCheapestFlight(flights: FlightLike[]): FlightLike | null {
   const available = flights.filter((flight) => flight.seatsAvailable > 0);
   if (available.length === 0) return null;
-  return available.reduce((cheapest, flight) =>
-    flight.price < cheapest.price ? flight : cheapest,
+  return available.reduce(
+    (cheapest, flight) => (flight.price < cheapest.price ? flight : cheapest),
+    available[0],
   );
 }
 

@@ -75,7 +75,6 @@ export default async function BookingVerificationPage({ searchParams }: { search
               placeholder="TRV-XXXXXX"
               defaultValue={input}
               required
-              autoFocus
             />
             <p className="helper">Contoh kode dari data demo: TRV-DEMO01</p>
           </div>
